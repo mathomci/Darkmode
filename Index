@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle Orçamentário · Matheus Homci</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e1a;--card:rgba(255,255,255,.055);--border:rgba(255,255,255,.1);
+  --txt:#fff;--txt2:#94a3b8;--blue:#38bdf8;--green:#4ade80;--red:#f87171;
+  --purple:#a78bfa;--orange:#fb923c;--teal:#2dd4bf;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
+  line-height:1.55;min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(600px 300px at 10% -5%,rgba(56,189,248,.13),transparent 60%),
+    radial-gradient(600px 300px at 90% 0%,rgba(167,139,250,.13),transparent 60%),
+    radial-gradient(500px 400px at 50% 110%,rgba(45,212,191,.08),transparent 60%);
+}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+/* ===== HEADER ===== */
+header{text-align:center;margin-bottom:22px}
+header h1{
+  font-size:26px;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(90deg,var(--blue),var(--purple));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+header p{color:var(--txt2);font-size:13px;margin-top:4px}
+.badge{
+  display:inline-block;margin-top:10px;padding:5px 14px;border-radius:20px;
+  background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);
+  color:var(--blue);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+.toolbar{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{
+  background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--txt);
+  padding:8px 16px;border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.25s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.btn:hover{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.4);transform:translateY(-1px)}
+.meta{color:var(--txt2);font-size:11px}
+/* ===== GLASS BASE ===== */
+.glass{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+/* ===== CHIPS ===== */
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:26px}
+.chip{padding:14px 16px;border-radius:14px;transition:.25s}
+.chip .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.chip .val{font-size:20px;font-weight:800;margin-top:4px}
+.chip .sub{font-size:10px;color:var(--txt2);margin-top:2px}
+/* ===== VIEWS ===== */
+.view{display:none;animation:fade .3s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* ===== NAV CARDS (HUB) ===== */
+.nav-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.nav-card{
+  position:relative;text-align:left;color:var(--txt);font-family:inherit;
+  padding:24px;border-radius:18px;cursor:pointer;transition:.25s;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.nav-card:hover{transform:translateY(-4px);border-color:rgba(56,189,248,.45);box-shadow:0 14px 40px rgba(56,189,248,.15)}
+.nav-icon{
+  width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:16px;
+}
+.nav-card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.nav-card p{font-size:12px;color:var(--txt2);line-height:1.5}
+.nav-arrow{position:absolute;top:20px;right:20px;color:var(--txt2);font-size:18px;transition:.25s}
+.nav-card:hover .nav-arrow{color:var(--blue);transform:translateX(3px)}
+/* ===== SECTION TITLES ===== */
+.sec-title{font-size:17px;font-weight:700;margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+.sec-title .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+/* ===== KPI GRID ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.kpi{padding:20px}
+.kpi .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.kpi .val{font-size:24px;font-weight:800;margin-top:8px}
+.kpi .sub{font-size:11px;color:var(--txt2);margin-top:4px;line-height:1.5}
+/* ===== PROGRESS ===== */
+.prog{width:100%;height:10px;background:rgba(255,255,255,.09);border-radius:6px;overflow:hidden;margin:14px 0}
+.prog-fill{height:100%;border-radius:6px;transition:width .8s ease}
+/* ===== TABLES ===== */
+.tbl-wrap{width:100%;overflow-x:auto;border-radius:16px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{
+  text-align:left;padding:12px 14px;background:rgba(255,255,255,.05);
+  color:var(--txt2);font-size:10px;text-transform:uppercase;letter-spacing:.07em;
+  border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;
+}
+td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr.hl{background:rgba(167,139,250,.08);font-weight:700}
+/* ===== BADGES ===== */
+.tag{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.t-green{background:rgba(74,222,128,.15);color:var(--green)}
+.t-red{background:rgba(248,113,113,.15);color:var(--red)}
+.t-blue{background:rgba(56,189,248,.15);color:var(--blue)}
+.t-orange{background:rgba(251,146,60,.15);color:var(--orange)}
+.t-grey{background:rgba(148,163,184,.15);color:var(--txt2)}
+/* ===== CREDIT CARDS ===== */
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cc{padding:22px;position:relative;overflow:hidden}
+.cc::before{
+  content:'';position:absolute;inset:0;opacity:.14;pointer-events:none;
+  background:linear-gradient(135deg,var(--cc1,#38bdf8),var(--cc2,#a78bfa));
+}
+.cc .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:relative}
+.cc .name{font-weight:800;font-size:14px}
+.cc .fatura{font-size:24px;font-weight:800;margin:4px 0 2px;position:relative}
+.cc .venc{font-size:11px;color:var(--txt2);position:relative}
+.cc .lim{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);position:relative;margin-top:8px}
+/* ===== BACK NAV ===== */
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--txt2)}
+.breadcrumb button{
+  background:none;border:none;color:var(--blue);font-family:inherit;font-size:13px;
+  font-weight:600;cursor:pointer;padding:4px 8px;border-radius:8px;display:flex;align-items:center;gap:6px;
+}
+.breadcrumb button:hover{background:rgba(56,189,248,.12)}
+/* ===== INVEST ===== */
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+/* ===== LIQUIDITY ===== */
+.liq{padding:22px;margin-top:16px}
+.liq .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;font-size:14px}
+/* ===== CHART ===== */
+.chart-box{padding:22px;margin-top:16px}
+/* ===== FOOTER ===== */
+footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
+@media(max-width:640px){
+  .wrap{padding:18px 14px 48px}
+  header h1{font-size:21px}
+  .nav-grid{grid-template-columns:1fr 1fr}
+  .kpi .val{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Controle Orçamentário</h1>
+    <p>Matheus Homci · Dashboard pessoal · Dados da planilha</p>
+    <span class="badge">Cenário: Ago/Set 2026</span>
+    <div class="toolbar">
+      <button class="btn" onclick="loadAll()">↻ Atualizar dados</button>
+      <span class="meta" id="meta">Carregando…</span>
+    </div>
+  </header>
+
+  <!-- Mini chips (sempre visíveis) -->
+  <div class="chips" id="chips"></div>
+
+  <!-- ============ VIEW: HOME (HUB) ============ -->
+  <section class="view active" id="view-home">
+    <div class="nav-grid">
+      <button class="nav-card" onclick="go('overview')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(56,189,248,.05))">📊</div>
+        <h3>Visão Geral</h3>
+        <p>KPIs completos, análise de liquidez e projeção mensal de gastos.</p>
+      </button>
+      <button class="nav-card" onclick="go('credit')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
+        <h3>Gestão de Crédito</h3>
+        <p>Limites, uso por cartão e status de cada bandeira.</p>
+      </button>
+      <button class="nav-card" onclick="go('faturas')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(74,222,128,.25),rgba(74,222,128,.05))">🧾</div>
+        <h3>Faturas</h3>
+        <p>Detalhamento completo de cada fatura do mês.</p>
+      </button>
+      <button class="nav-card" onclick="go('cronograma')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(251,146,60,.25),rgba(251,146,60,.05))">📅</div>
+        <h3>Cronograma</h3>
+        <p>Parcelamentos e obrigações mês a mês até Abr/27.</p>
+      </button>
+      <button class="nav-card" onclick="go('invest')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(45,212,191,.25),rgba(45,212,191,.05))">📈</div>
+        <h3>Investimentos</h3>
+        <p>Reservas acumuladas e rendimento estimado.</p>
+      </button>
+      <button class="nav-card" onclick="go('extrato')">
+        <span class="nav-arrow">→</span>
+        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(248,113,113,.25),rgba(248,113,113,.05))">📋</div>
+        <h3>Extrato</h3>
+        <p>Entradas e saídas registradas no período.</p>
+      </button>
+    </div>
+    <footer>Dados lidos direto do Google Sheets · Atualize a página ou clique em "Atualizar dados"</footer>
+  </section>
+
+  <!-- ============ VIEW: VISÃO GERAL ============ -->
+  <section class="view" id="view-overview">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Visão Geral</span></div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="glass liq" id="liqCard"></div>
+    <div class="glass chart-box">
+      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos (9 meses)<span class="line"></span></h3>
+      <div style="height:300px"><canvas id="chartMensal"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: CRÉDITO ============ -->
+  <section class="view" id="view-credit">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Gestão de Crédito</span></div>
+    <div class="cc-grid" id="ccGrid"></div>
+    <h3 class="sec-title">Limites por Cartão<span class="line"></span></h3>
+    <div class="glass tbl-wrap"><table id="limTable"></table></div>
+  </section>
+
+  <!-- ============ VIEW: FATURAS ============ -->
+  <section class="view" id="view-faturas">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Faturas</span></div>
+    <div id="faturasContent"></div>
+  </section>
+
+  <!-- ============ VIEW: CRONOGRAMA ============ -->
+  <section class="view" id="view-cronograma">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Cronograma</span></div>
+    <div class="glass tbl-wrap"><table id="cronTable"></table></div>
+  </section>
+
+  <!-- ============ VIEW: INVESTIMENTOS ============ -->
+  <section class="view" id="view-invest">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Investimentos</span></div>
+    <div class="inv-grid" id="invGrid"></div>
+  </section>
+
+  <!-- ============ VIEW: EXTRATO ============ -->
+  <section class="view" id="view-extrato">
+    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Extrato</span></div>
+    <div class="glass tbl-wrap"><table id="extTable"></table></div>
+  </section>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const SHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTn3WVpXjtEOzekF4UXmzQKij_bnjcq3QEKB9Cs5tC3tDa2kE7lsZlg9-dPF25f6Tm6tKi3CmYoLp9S/pub';
+const GIDS = {
+  resumo:0, limites:541806221, faturas:2070944204, extrato:1171372127,
+  cronograma:1731209628, investimentos:1278202952, mensal:1583243318,
+  bradesco:1531971815, inter:1033034888, mp:1004144872, nubank:1136662366
+};
+const CARD_SHEET = {
+  'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
+  'Mercado Pago Visa':'mp', 'Nubank Mastercard':'nubank'
+};
+const SHORT_LABEL = {
+  'Saldo em Contas':'Saldo', 'Liquidez Real Projetada 04/09':'Liquidez 04/09',
+  'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas Setembro':'Faturas Set'
+};
+let DB = {}, chart = null;
+
+/* ================= CSV / NUM ================= */
+function parseCSV(text){
+  const rows=[];let row=[],field='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c!=='\r') field+=c;
+    }
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+function cell(r,i){return (r[i]!==undefined&&r[i]!==null)?String(r[i]).trim():'';}
+function parseNum(v){
+  if(v===undefined||v===null) return null;
+  let s=String(v).trim().replace(/R\$\s?/gi,'').replace(/%/g,'').replace(/\./g,'').replace(/,/g,'.');
+  if(s===''||s==='-'||s==='—') return null;
+  const n=parseFloat(s);
+  return isNaN(n)?null:n;
+}
+function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ================= LOAD ================= */
+async function loadSheet(key){
+  const url=`${SHEET_BASE}?gid=${GIDS[key]}&single=true&output=csv`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(key+' falhou');
+  DB[key]=parseCSV(await res.text());
+}
+async function loadAll(){
+  document.getElementById('meta').textContent='Atualizando…';
+  try{
+    await Promise.all(Object.keys(GIDS).map(loadSheet));
+    renderAll();
+    document.getElementById('meta').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+  }catch(e){
+    document.getElementById('meta').textContent='Erro ao carregar dados';
+    console.error(e);
+  }
+}
+
+/* ================= RENDER ================= */
+function renderAll(){
+  renderChips(); renderOverview(); renderCredit(); renderFaturas();
+  renderCronograma(); renderInvest(); renderExtrato();
+}
+function renderChips(){
+  const rows=(DB.resumo||[]).slice(1);
+  let html='';
+  rows.slice(0,4).forEach(r=>{
+    const lbl=SHORT_LABEL[cell(r,0)]||cell(r,0);
+    const val=cell(r,1), n=parseNum(val);
+    html+=`<div class="glass chip"><div class="lbl">${esc(lbl)}</div>
+      <div class="val">${n!==null?fmtBRL(n):esc(val)}</div>
+      <div class="sub">${esc(cell(r,2))}</div></div>`;
+  });
+  document.getElementById('chips').innerHTML=html;
+}
+function renderOverview(){
+  const rows=(DB.resumo||[]).slice(1);
+  let grid='';
+  rows.slice(0,4).forEach(r=>{
+    const n=parseNum(cell(r,1));
+    grid+=`<div class="glass kpi"><div class="lbl">${esc(cell(r,0))}</div>
+      <div class="val">${n!==null?fmtBRL(n):esc(cell(r,1))}</div>
+      <div class="sub">${esc(cell(r,2))}</div></div>`;
+  });
+  document.getElementById('kpiGrid').innerHTML=grid;
+  const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
+  const comp=rows.find(r=>/Comprometimento/i.test(cell(r,0)));
+  const acum=rows.find(r=>/Total Acumulado/i.test(cell(r,0)));
+  const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), acumN=parseNum(acum?cell(acum,1):'');
+  const pct=compN!==null?Math.min(100,compN):0;
+  const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
+  document.getElementById('liqCard').innerHTML=`
+    <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento<span class="line"></span></h3>
+    <div class="row">
+      <span>Margem Livre: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong></span>
+      <span>Comprometimento: <strong style="color:${pct>80?'var(--red)':pct>50?'var(--orange)':'var(--green)'}">${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}</strong></span>
+    </div>
+    <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
+    <div class="row"><span style="font-size:12px;color:var(--txt2)">Total acumulado até 04/09: <strong>${acumN!==null?fmtBRL(acumN):'—'}</strong></span></div>`;
+  renderChart();
+}
+function renderChart(){
+  const rows=(DB.mensal||[]).slice(1);
+  const labels=[],data=[];
+  rows.forEach(r=>{labels.push(cell(r,0));const n=parseNum(cell(r,1));data.push(n!==null?n:0);});
+  const ctx=document.getElementById('chartMensal');
+  if(!ctx) return;
+  if(chart) chart.destroy();
+  if(typeof Chart==='undefined'){ctx.parentElement.innerHTML='<p style="color:var(--txt2);font-size:13px">Gráfico indisponível (Chart.js não carregou).</p>';return;}
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Total Gasto',data,backgroundColor:['#38bdf8','#a78bfa','#4ade80','#4ade80','#fb923c','#fb923c','#f87171','#f87171','#94a3b8'],borderRadius:8,barPercentage:.7}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#94a3b8'}}},
+      scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{ticks:{color:'#94a3b8',callback:v=>'R$ '+v},grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+}
+function renderCredit(){
+  const rows=(DB.limites||[]).slice(1);
+  const fats=(DB.faturas||[]).slice(1);
+  let html='';
+  rows.forEach(r=>{
+    const name=cell(r,0), total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
+    const pctDisp=parseNum(cell(r,3)), status=cell(r,4);
+    const uso=pctDisp!==null?100-pctDisp:0;
+    const fatRow=fats.find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0].toLowerCase()));
+    const fat=parseNum(fatRow?cell(fatRow,1):''), venc=fatRow?cell(fatRow,2):'';
+    const color=uso>80?'var(--red)':uso>50?'var(--orange)':'var(--blue)';
+    const tag=status.toLowerCase()==='crítico'?'t-red':status.toLowerCase()==='alerta'?'t-orange':status.toLowerCase()==='normal'?'t-blue':'t-grey';
+    const c1=name.startsWith('Bradesco')?'#38bdf8':name.startsWith('Inter')?'#f87171':name.startsWith('Mercado')?'#fb923c':'#64748b';
+    html+=`<div class="glass cc" style="--cc1:${c1};--cc2:${c1}">
+      <div class="top"><span class="name">${esc(name)}</span><span class="tag ${tag}">${esc(status)}</span></div>
+      <div class="fatura">${fat!==null?fmtBRL(fat):'—'}</div>
+      <div class="venc">Fatura do mês · Venc ${esc(venc||'—')}</div>
+      <div class="prog"><div class="prog-fill" style="width:${Math.min(100,uso)}%;background:${color}"></div></div>
+      <div class="lim"><span>Uso: ${uso.toFixed(1).replace('.',',')}%</span>
+      <span>Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}</span></div>
+    </div>`;
+  });
+  document.getElementById('ccGrid').innerHTML=html;
+  let t='<thead><tr><th>Cartão</th><th>Limite Total</th><th>Disponível</th><th>% Disponível</th><th>Status</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
+    t+=`<tr><td>${esc(cell(r,0))}</td><td>${total!==null?fmtBRL(total):'—'}</td>
+      <td>${disp!==null?fmtBRL(disp):'—'}</td><td>${esc(cell(r,3))}</td>
+      <td><span class="tag ${cell(r,4).toLowerCase()==='crítico'?'t-red':cell(r,4).toLowerCase()==='normal'?'t-blue':'t-grey'}">${esc(cell(r,4))}</span></td></tr>`;
+  });
+  document.getElementById('limTable').innerHTML=t+'</tbody>';
+}
+function renderFaturas(){
+  const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b']];
+  let out='';
+  cards.forEach(([name,key,color])=>{
+    const rows=(DB[key]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
+    const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
+    const fat=parseNum(fatRow?cell(fatRow,1):''), venc=fatRow?cell(fatRow,2):'';
+    let sum=0;rows.forEach(r=>{const n=parseNum(cell(r,1));if(n!==null)sum+=n;});
+    let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
+      <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
+    rows.forEach(r=>{
+      t+=`<tr><td>${esc(cell(r,0))}</td><td>${fmtBRL(parseNum(cell(r,1))||0)}</td>
+        <td>${esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
+    });
+    t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td>
+      <td style="color:${color}">Fatura registrada: ${fat!==null?fmtBRL(fat):'—'}</td></tr></tbody></table></div>`;
+    out+=t;
+  });
+  document.getElementById('faturasContent').innerHTML=out;
+}
+function renderCronograma(){
+  const rows=DB.cronograma||[];
+  if(!rows.length) return;
+  const head=rows[0];
+  let t='<thead><tr>'+head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')+'</tr></thead><tbody>';
+  rows.slice(1).forEach(r=>{
+    t+='<tr>'+r.map((c,i)=>`<td>${i===0?esc(c):esc(c)}</td>`).join('')+'</tr>';
+  });
+  document.getElementById('cronTable').innerHTML=t+'</tbody>';
+}
+function renderInvest(){
+  const rows=(DB.investimentos||[]).slice(1);
+  let html='';
+  rows.forEach(r=>{
+    const n=parseNum(cell(r,1));
+    const total=/total/i.test(cell(r,0));
+    html+=`<div class="glass" style="padding:20px;${total?'border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.06)':''}">
+      <div class="lbl" style="font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700">${esc(cell(r,0))}</div>
+      <div class="val" style="font-size:22px;font-weight:800;margin-top:8px;color:${total?'var(--purple)':'var(--green)'}">${n!==null?fmtBRL(n):esc(cell(r,1))}</div>
+      <div class="sub" style="font-size:11px;color:var(--txt2);margin-top:6px;line-height:1.5">${esc(cell(r,2))}</div>
+    </div>`;
+  });
+  document.getElementById('invGrid').innerHTML=html;
+}
+function renderExtrato(){
+  const rows=(DB.extrato||[]).slice(1);
+  let t='<thead><tr><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const tipo=cell(r,1), n=parseNum(cell(r,2));
+    const isEnt=tipo.toLowerCase().includes('entrada');
+    t+=`<tr><td>${esc(cell(r,0))}</td>
+      <td><span class="tag ${isEnt?'t-green':'t-red'}">${esc(tipo)}</span></td>
+      <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
+      <td>${esc(cell(r,3))}</td></tr>`;
+  });
+  document.getElementById('extTable').innerHTML=t+'</tbody>';
+}
+
+/* ================= NAV ================= */
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el=document.getElementById('view-'+view);
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================= INIT ================= */
+loadAll();
+</script>
+</body>
+</html>
