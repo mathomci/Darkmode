@@ -240,7 +240,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         </div>
         <div class="form-row">
           <div class="field">
-            <label>Valor (R$)</label>
+            <label>Valor da parcela (R$)</label>
             <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required>
           </div>
           <div class="field">
@@ -249,6 +249,23 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
               <option value="saida">Saída</option>
               <option value="entrada">Entrada</option>
             </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Parcelado?</label>
+          <select id="parcelado" onchange="toggleParcelamento()">
+            <option value="nao">À vista</option>
+            <option value="sim">Parcelado</option>
+          </select>
+        </div>
+        <div class="form-row" id="parcelaFields" style="display:none">
+          <div class="field">
+            <label>Nº de parcelas</label>
+            <input type="number" id="parcelas" min="1" max="24" value="1">
+          </div>
+          <div class="field">
+            <label>Parcela atual</label>
+            <input type="number" id="parcelaAtual" min="1" max="24" value="1">
           </div>
         </div>
         <div class="field">
@@ -524,22 +541,29 @@ function renderLancamentos(){
     el.innerHTML='<p style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum lançamento registrado pelo site.</p>';
     return;
   }
-  let t='<thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Tipo</th><th>Descrição</th><th>Ação</th></tr></thead><tbody>';
+  let t='<thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Tipo</th><th>Descrição</th><th>Parcela</th><th>Ação</th></tr></thead><tbody>';
   rows.forEach(r=>{
     const id=cell(r,5);
     const n=parseNum(cell(r,2));
     const isEnt=cell(r,3).toLowerCase().includes('entrada');
+    const parcela=cell(r,6)==='sim' ? (cell(r,8)+'/'+cell(r,7)) : 'À vista';
     t+=`<tr><td>${esc(cell(r,0))}</td>
       <td>${esc(cell(r,1))}</td>
       <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
       <td><span class="tag ${isEnt?'t-green':'t-red'}">${esc(cell(r,3))}</span></td>
       <td>${esc(cell(r,4))}</td>
+      <td>${esc(parcela)}</td>
       <td><button class="btn" style="padding:5px 12px;font-size:12px;color:var(--red);border-color:rgba(248,113,113,.4)" onclick="cancelarLancamento('${esc(id)}')">Cancelar</button></td></tr>`;
   });
   el.innerHTML=t+'</tbody>';
 }
+/* ================= PARCELAMENTO ================= */
+function toggleParcelamento(){
+  var sim = document.getElementById('parcelado').value === 'sim';
+  document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
+}
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbx-Ztrq938vd_pVccJauSKic5e3n50lWfiuz_y9jOnTMUN9QKOhu8L8Iw0n3On7f2nMzw/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbyj3AFe0SPCKJDpdGnmLAisXmRU0GO9t_RnG9FJmviorOkXVCgzJdIB-lN5eF1kms4TIA/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -551,7 +575,10 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
     categoria: document.getElementById('categoria').value,
     valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
     tipo: document.getElementById('tipo').value,
-    descricao: document.getElementById('descricao').value
+    descricao: document.getElementById('descricao').value,
+    parcelado: document.getElementById('parcelado').value,
+    parcelas: document.getElementById('parcelas').value,
+    parcelaAtual: document.getElementById('parcelaAtual').value
   };
   fetch(URL_SCRIPT, {
     method:'POST', mode:'no-cors',
@@ -560,6 +587,7 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
   }).then(function(){
     statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';
     document.getElementById('formLancamento').reset();
+    document.getElementById('parcelaFields').style.display='none';
     setTimeout(function(){
       if (typeof loadAll === 'function') { loadAll(); }
       else { location.reload(); }
