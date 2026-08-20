@@ -530,7 +530,7 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
   var dados = {
     data: document.getElementById('data').value,
     categoria: document.getElementById('categoria').value,
-    valor: document.getElementById('valor').value,
+    valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
     tipo: document.getElementById('tipo').value,
     descricao: document.getElementById('descricao').value
   };
