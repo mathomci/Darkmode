@@ -466,7 +466,7 @@ function renderFaturas(){
   cards.forEach(([name,key,color])=>{
     const rows=(DB[key]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
     const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
-    const fat=parseNum(fatRow?cell(fatRow,1):''), venc=fatRow?cell(fatRow,2):'';
+    const venc=fatRow?cell(fatRow,2):'';
     let sum=0;rows.forEach(r=>{const n=parseNum(cell(r,1));if(n!==null)sum+=n;});
     let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
@@ -474,8 +474,7 @@ function renderFaturas(){
       t+=`<tr><td>${esc(cell(r,0))}</td><td>${fmtBRL(parseNum(cell(r,1))||0)}</td>
         <td>${esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
     });
-    t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td>
-      <td style="color:${color}">Fatura registrada: ${fat!==null?fmtBRL(fat):'—'}</td></tr></tbody></table></div>`;
+    t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td><td></td></tr></tbody></table></div>`;
     out+=t;
   });
   document.getElementById('faturasContent').innerHTML=out;
@@ -540,7 +539,7 @@ function renderLancamentos(){
   el.innerHTML=t+'</tbody>';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwEDFk-cZUFbRHlCLI2L790uBSU4F6-mNxVKcFABewB22Ug_ZwUpO1MfMHUMfQEZjsUeQ/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbx-Ztrq938vd_pVccJauSKic5e3n50lWfiuz_y9jOnTMUN9QKOhu8L8Iw0n3On7f2nMzw/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
