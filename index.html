@@ -225,7 +225,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
       <form id="formLancamento">
         <div class="field">
           <label>Data</label>
-          <input type="date" id="data" required>
+          <input type="date" id="data">
         </div>
         <div class="field">
           <label>Categoria / Origem</label>
@@ -240,7 +240,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         </div>
         <div class="form-row">
           <div class="field">
-            <label>Valor da parcela (R$)</label>
+            <label>Valor (R$)</label>
             <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required>
           </div>
           <div class="field">
@@ -563,7 +563,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbw0NCXp23-5nz3gbAiCnbUvuenJUBWpptx-e4ZoraoqTicSZFrEdp6ie9Rg0fZDPsAeIg/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycby_K9EXEB50O-RHInBp4TBDhJzeYMy38FUSg9l9XY1sBSQc_njH8oA0UzYdKsjUMO0/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -588,6 +588,7 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
     statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';
     document.getElementById('formLancamento').reset();
     document.getElementById('parcelaFields').style.display='none';
+    document.getElementById('data').value = new Date().toISOString().split('T')[0];
     setTimeout(function(){
       if (typeof loadAll === 'function') { loadAll(); }
       else { location.reload(); }
@@ -628,6 +629,7 @@ function go(view){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 /* ================= INIT ================= */
+document.getElementById('data').value = new Date().toISOString().split('T')[0];
 loadAll();
 </script>
 </body>
