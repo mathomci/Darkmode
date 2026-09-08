@@ -188,7 +188,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
         <h3>Gestão de Crédito</h3>
-        <p>Limites, uso por cartão, pagamento efetuado e desfazer.</p>
+        <p>Limites, uso por cartão, pagamento efetuado, desfazer e repasses.</p>
       </button>
       <button class="nav-card" onclick="go('faturas')">
         <span class="nav-arrow">→</span>
@@ -299,6 +299,15 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
     <div class="cc-grid" id="ccGrid"></div>
     <h3 class="sec-title">Limites por Cartão<span class="line"></span></h3>
     <div class="glass tbl-wrap"><table id="limTable"></table></div>
+    <h3 class="sec-title">Repasses PIX<span class="line"></span></h3>
+    <div class="glass" style="padding:22px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="confirmarRepasse('viagem')">✈️ Confirmar repasse viagem (R$ 185,00)</button>
+        <button class="btn" onclick="confirmarRepasse('beli')">💸 Confirmar PIX Beli (R$ 274,80)</button>
+        <button class="btn" onclick="confirmarRepasse('reserva')">🏦 Confirmar repasse reserva (R$ 100,00)</button>
+      </div>
+      <p style="font-size:11px;color:var(--txt2);margin-top:10px">Confirme cada repasse após fazer o PIX. O valor é registrado no extrato e deduzido do saldo automaticamente.</p>
+    </div>
   </section>
   <!-- ============ VIEW: FATURAS ============ -->
   <section class="view" id="view-faturas">
@@ -331,9 +340,9 @@ const GIDS = {
   lancamentos:898101089,
   cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957
 };
-const CARD_SHEET = {
+const CARD_KEY = {
   'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
-  'Mercado Pago Visa':'mp', 'Nubank Mastercard':'nubank'
+  'Mercado Pago Visa':'mercado pago', 'Nubank Mastercard':'nubank'
 };
 const CRON_SECTIONS = [
   {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
@@ -341,6 +350,7 @@ const CRON_SECTIONS = [
   {label:'Mercado Pago', key:'cronMP', color:'#fb923c'},
   {label:'Repasses PIX', key:'cronRepasses', color:'#2dd4bf'}
 ];
+const REPASSES = { viagem:185, beli:274.80, reserva:100 };
 const SHORT_LABEL = {
   'Saldo em Contas':'Saldo', 'Liquidez Real Projetada 04/09':'Liquidez 04/09',
   'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas Setembro':'Faturas Set'
@@ -421,7 +431,7 @@ function renderOverview(){
   document.getElementById('kpiGrid').innerHTML=grid;
   const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
   const comp=rows.find(r=>/Comprometimento/i.test(cell(r,0)));
-  const acum=rows.find(r=>/Total Acumulado/i.test(cell(r,0)));
+  const acum=rows.find(r=>/Total Acumulado|Margem Livre/i.test(cell(r,0)) && /Saldo/i.test(cell(r,1)));
   const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), acumN=parseNum(acum?cell(acum,1):'');
   const pct=compN!==null?Math.min(100,compN):0;
   const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
@@ -432,7 +442,7 @@ function renderOverview(){
       <span>Comprometimento: <strong style="color:${pct>80?'var(--red)':pct>50?'var(--orange)':'var(--green)'}">${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}</strong></span>
     </div>
     <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
-    <div class="row"><span style="font-size:12px;color:var(--txt2)">Total acumulado até 04/09: <strong>${acumN!==null?fmtBRL(acumN):'—'}</strong></span></div>`;
+    <div class="row"><span style="font-size:12px;color:var(--txt2)">Saldo atual: <strong>${acumN!==null?fmtBRL(acumN):'—'}</strong></span></div>`;
   renderChart();
 }
 function renderChart(){
@@ -457,7 +467,8 @@ function renderCredit(){
   const fats=(DB.faturas||[]).slice(1);
   let html='';
   rows.forEach(r=>{
-    const name=cell(r,0), total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
+    const name=cell(r,0), key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
+    const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
     const pctDisp=parseNum(cell(r,3)), status=cell(r,4);
     const uso=pctDisp!==null?100-pctDisp:0;
     const fatRow=fats.find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0].toLowerCase()));
@@ -473,8 +484,8 @@ function renderCredit(){
       <div class="lim"><span>Uso: ${uso.toFixed(1).replace('.',',')}%</span>
       <span>Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}</span></div>
       <div style="display:flex;gap:8px;margin-top:12px;position:relative;flex-wrap:wrap">
-        <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(name)}')">✓ Pagamento efetuado</button>
-        <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(name)}')">↩ Desfazer</button>
+        <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado</button>
+        <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer</button>
       </div>
     </div>`;
   });
@@ -491,10 +502,11 @@ function renderCredit(){
 function renderFaturas(){
   const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b']];
   let out='';
-  cards.forEach(([name,key,color])=>{
-    const rows=(DB[key]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
+  cards.forEach(([name,keySheet,color])=>{
+    const rows=(DB[keySheet]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
     const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
     const venc=fatRow?cell(fatRow,2):'';
+    const key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
     let sum=0;rows.forEach(r=>{const n=parseNum(cell(r,1));if(n!==null)sum+=n;});
     let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
@@ -504,8 +516,8 @@ function renderFaturas(){
     });
     t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td><td></td></tr></tbody></table></div>`;
     t+=`<div style="display:flex;gap:8px;margin:12px 0 20px;flex-wrap:wrap">
-      <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(name)}')">✓ Pagamento efetuado — ${esc(name)}</button>
-      <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(name)}')">↩ Desfazer pagamento</button>
+      <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado — ${esc(name)}</button>
+      <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer pagamento</button>
     </div>`;
     out+=t;
   });
@@ -528,7 +540,6 @@ function renderCronograma(){
     t+='</tbody></table></div>';
     out+=t;
   });
-  // Resumo consolidado
   const rows=DB.cronograma||[];
   if(rows.length){
     const head=rows[0];
@@ -603,7 +614,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxYDEgDpgJdZnwjTT4KbN7kltyF7AF7xxIULZgdGGini93fjEAZR9yPCWpQezvrPKJgRw/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbylbykN9HzYzaQvfOcZCj3N5u4-kzPn_3f7C-OqgdsQe8fIy5hVDwgUFYJJHfdsqwCgwA/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -662,30 +673,47 @@ function cancelarLancamento(id){
   });
 }
 /* ================= PAGAMENTO EFETUADO / DESFAZER ================= */
-function pagarCartao(cartao){
-  if(!confirm('Confirmar pagamento da fatura ' + cartao + '? A fatura será zerada, a próxima será montada com os gastos fixos e o limite será liberado.')) return;
-  var btn = event.target; if(btn) btn.disabled = true;
+function pagarCartao(key, nome){
+  nome = nome || key;
+  if(!confirm('Confirmar pagamento da fatura ' + nome + '? A fatura será zerada, a próxima será montada com os gastos fixos e o limite será liberado.')) return;
   fetch(URL_SCRIPT, {
     method:'POST', mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({ action:'pagar', cartao:cartao })
+    body: JSON.stringify({ action:'pagar', cartao:key })
   }).then(function(){
-    setTimeout(function(){ loadAll(); if(btn) btn.disabled = false; }, 3500);
+    setTimeout(function(){ loadAll(); }, 3500);
   }).catch(function(){
     alert('Erro ao registrar pagamento. Tente novamente.');
-    if(btn) btn.disabled = false;
   });
 }
-function desfazerPagamento(cartao){
-  if(!confirm('Desfazer o último pagamento de ' + cartao + '? Disponível por até 2 dias.')) return;
+function desfazerPagamento(key, nome){
+  nome = nome || key;
+  if(!confirm('Desfazer o último pagamento de ' + nome + '? Disponível por até 2 dias.')) return;
   fetch(URL_SCRIPT, {
     method:'POST', mode:'no-cors',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({ action:'desfazer', cartao:cartao })
+    body: JSON.stringify({ action:'desfazer', cartao:key })
   }).then(function(){
     setTimeout(function(){ loadAll(); }, 3500);
   }).catch(function(){
     alert('Erro ao desfazer pagamento. Tente novamente.');
+  });
+}
+/* ================= CONFIRMAR REPASSE ================= */
+function confirmarRepasse(tipo){
+  var nomes = {viagem:'repasse de viagem', beli:'PIX para Beli', reserva:'repasse de reserva'};
+  var valor = REPASSES[tipo];
+  if(!valor){ alert('Tipo de repasse não reconhecido.'); return; }
+  var label = 'R$ ' + valor.toFixed(2).replace('.', ',');
+  if(!confirm('Confirmar ' + (nomes[tipo]||tipo) + ' no valor de ' + label + '? O valor será registrado no extrato e deduzido do saldo.')) return;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'repasse', tipo:tipo, valor:valor })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); }, 3500);
+  }).catch(function(){
+    alert('Erro ao confirmar repasse. Tente novamente.');
   });
 }
 /* ================= NAV ================= */
