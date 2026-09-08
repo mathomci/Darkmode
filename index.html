@@ -141,6 +141,9 @@ tr.hl{background:rgba(167,139,250,.08);font-weight:700}
 #cancelStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
 #cancelStatus.ok{color:var(--green)}
 #cancelStatus.err{color:var(--red)}
+#invStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#invStatus.ok{color:var(--green)}
+#invStatus.err{color:var(--red)}
 footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
 @media(max-width:640px){
   .wrap{padding:18px 14px 48px}
@@ -323,6 +326,21 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
   <section class="view" id="view-invest">
     <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Investimentos</span></div>
     <div class="inv-grid" id="invGrid"></div>
+    <h3 class="sec-title">Atualizar Investimentos<span class="line"></span></h3>
+    <div class="glass form-card">
+      <div class="form-row">
+        <div class="field">
+          <label>Valor Inter (R$)</label>
+          <input type="number" id="invInter" step="0.01" min="0" placeholder="0,00">
+        </div>
+        <div class="field">
+          <label>Valor Nubank (R$)</label>
+          <input type="number" id="invNubank" step="0.01" min="0" placeholder="0,00">
+        </div>
+      </div>
+      <button class="btn" id="btnInv" onclick="salvarInvestimentos()">Atualizar investimentos</button>
+      <p id="invStatus"></p>
+    </div>
   </section>
   <!-- ============ VIEW: EXTRATO ============ -->
   <section class="view" id="view-extrato">
@@ -614,7 +632,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzbeOwtMAUY_8lRkxvfdLlY0o4ZvRaN_nFNkL8f22ymSXNWEUb_gInbHLzBGs2SC6BtmA/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzyYglA2QJdgSDKTQOF265sJcxnVtZ_5c_wrAQ40DNcS9Tc-AP-lnKO2t6VBwfrBEKLkg/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -714,6 +732,36 @@ function confirmarRepasse(tipo){
     setTimeout(function(){ loadAll(); }, 3500);
   }).catch(function(){
     alert('Erro ao confirmar repasse. Tente novamente.');
+  });
+}
+/* ================= ATUALIZAR INVESTIMENTOS ================= */
+function salvarInvestimentos(){
+  var invStatus = document.getElementById('invStatus');
+  var btn = document.getElementById('btnInv');
+  var vInter = document.getElementById('invInter').value;
+  var vNubank = document.getElementById('invNubank').value;
+  if(!vInter && !vNubank){ invStatus.className='err'; invStatus.textContent='Preencha ao menos um valor.'; return; }
+  invStatus.className=''; invStatus.textContent='Atualizando…';
+  btn.disabled = true;
+  var chamadas = [];
+  if(vInter) chamadas.push(
+    fetch(URL_SCRIPT, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'investimento', conta:'inter', valor: parseFloat(vInter.replace(',','.'))})}));
+  if(vNubank) chamadas.push(
+    fetch(URL_SCRIPT, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'investimento', conta:'nubank', valor: parseFloat(vNubank.replace(',','.'))})}));
+  Promise.all(chamadas).then(function(){
+    invStatus.className='ok'; invStatus.textContent='✅ Investimentos atualizados! Atualizando dados…';
+    document.getElementById('invInter').value='';
+    document.getElementById('invNubank').value='';
+    setTimeout(function(){
+      if (typeof loadAll === 'function') loadAll();
+      else location.reload();
+      btn.disabled = false; invStatus.textContent='';
+    }, 3000);
+  }).catch(function(){
+    invStatus.className='err'; invStatus.textContent='❌ Erro ao atualizar. Tente novamente.';
+    btn.disabled = false;
   });
 }
 /* ================= NAV ================= */
