@@ -156,7 +156,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
   <header>
     <h1>Controle Orçamentário</h1>
     <p>Matheus Homci · Dashboard pessoal · Dados da planilha</p>
-    <span class="badge">Cenário: Set/2026 em diante</span>
+    <span class="badge">Cenário: Out/2026 em diante</span>
     <div class="toolbar">
       <button class="btn" onclick="loadAll()">↻ Atualizar dados</button>
       <span class="meta" id="meta">Carregando…</span>
@@ -352,8 +352,8 @@ const CRON_SECTIONS = [
 ];
 const REPASSES = { viagem:185, beli:274.80, reserva:100 };
 const SHORT_LABEL = {
-  'Saldo em Contas':'Saldo', 'Liquidez Real Projetada 04/09':'Liquidez 04/09',
-  'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas Setembro':'Faturas Set'
+  'Saldo em Contas':'Saldo', 'Liquidez Real Projetada':'Liquidez',
+  'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas':'Faturas'
 };
 let DB = {}, chart = null;
 /* ================= CSV / NUM ================= */
@@ -431,18 +431,18 @@ function renderOverview(){
   document.getElementById('kpiGrid').innerHTML=grid;
   const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
   const comp=rows.find(r=>/Comprometimento/i.test(cell(r,0)));
-  const acum=rows.find(r=>/Total Acumulado|Margem Livre/i.test(cell(r,0)) && /Saldo/i.test(cell(r,1)));
-  const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), acumN=parseNum(acum?cell(acum,1):'');
+  const saldo=rows.find(r=>/Saldo em Contas/i.test(cell(r,0)));
+  const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), saldoN=parseNum(saldo?cell(saldo,1):'');
   const pct=compN!==null?Math.min(100,compN):0;
   const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
   document.getElementById('liqCard').innerHTML=`
     <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento<span class="line"></span></h3>
     <div class="row">
-      <span>Margem Livre: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong></span>
+      <span>Margem Livre: <strong>${saldoN!==null?fmtBRL(saldoN):'—'}</strong></span>
       <span>Comprometimento: <strong style="color:${pct>80?'var(--red)':pct>50?'var(--orange)':'var(--green)'}">${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}</strong></span>
     </div>
     <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
-    <div class="row"><span style="font-size:12px;color:var(--txt2)">Saldo atual: <strong>${acumN!==null?fmtBRL(acumN):'—'}</strong></span></div>`;
+    <div class="row"><span style="font-size:12px;color:var(--txt2)">Liquidez após faturas do mês: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong></span></div>`;
   renderChart();
 }
 function renderChart(){
@@ -614,7 +614,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbylbykN9HzYzaQvfOcZCj3N5u4-kzPn_3f7C-OqgdsQe8fIy5hVDwgUFYJJHfdsqwCgwA/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxZg5RexsrYoTejv4axhMLS4x7BdNukwH9slK4FPbdlODFv2d5G1WkQxSF9aGYe9HOooA/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
