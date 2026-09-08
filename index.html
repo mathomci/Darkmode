@@ -156,7 +156,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
   <header>
     <h1>Controle Orçamentário</h1>
     <p>Matheus Homci · Dashboard pessoal · Dados da planilha</p>
-    <span class="badge">Cenário: Ago/Set 2026</span>
+    <span class="badge">Cenário: Set/2026 em diante</span>
     <div class="toolbar">
       <button class="btn" onclick="loadAll()">↻ Atualizar dados</button>
       <span class="meta" id="meta">Carregando…</span>
@@ -188,7 +188,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
         <h3>Gestão de Crédito</h3>
-        <p>Limites, uso por cartão e status de cada bandeira.</p>
+        <p>Limites, uso por cartão, pagamento efetuado e desfazer.</p>
       </button>
       <button class="nav-card" onclick="go('faturas')">
         <span class="nav-arrow">→</span>
@@ -200,7 +200,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(251,146,60,.25),rgba(251,146,60,.05))">📅</div>
         <h3>Cronograma</h3>
-        <p>Parcelamentos e obrigações mês a mês até Abr/27.</p>
+        <p>Parcelamentos por cartão e obrigações mês a mês.</p>
       </button>
       <button class="nav-card" onclick="go('invest')">
         <span class="nav-arrow">→</span>
@@ -289,7 +289,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="glass liq" id="liqCard"></div>
     <div class="glass chart-box">
-      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos (9 meses)<span class="line"></span></h3>
+      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos (8 meses)<span class="line"></span></h3>
       <div style="height:300px"><canvas id="chartMensal"></canvas></div>
     </div>
   </section>
@@ -308,7 +308,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
   <!-- ============ VIEW: CRONOGRAMA ============ -->
   <section class="view" id="view-cronograma">
     <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Cronograma</span></div>
-    <div class="glass tbl-wrap"><table id="cronTable"></table></div>
+    <div id="cronContent"></div>
   </section>
   <!-- ============ VIEW: INVESTIMENTOS ============ -->
   <section class="view" id="view-invest">
@@ -328,12 +328,19 @@ const GIDS = {
   resumo:0, limites:541806221, faturas:2070944204, extrato:1171372127,
   cronograma:1731209628, investimentos:1278202952, mensal:1583243318,
   bradesco:1531971815, inter:1033034888, mp:1004144872, nubank:1136662366,
-  lancamentos:898101089
+  lancamentos:898101089,
+  cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957
 };
 const CARD_SHEET = {
   'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
   'Mercado Pago Visa':'mp', 'Nubank Mastercard':'nubank'
 };
+const CRON_SECTIONS = [
+  {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
+  {label:'Inter', key:'cronInter', color:'#f87171'},
+  {label:'Mercado Pago', key:'cronMP', color:'#fb923c'},
+  {label:'Repasses PIX', key:'cronRepasses', color:'#2dd4bf'}
+];
 const SHORT_LABEL = {
   'Saldo em Contas':'Saldo', 'Liquidez Real Projetada 04/09':'Liquidez 04/09',
   'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas Setembro':'Faturas Set'
@@ -438,7 +445,7 @@ function renderChart(){
   if(typeof Chart==='undefined'){ctx.parentElement.innerHTML='<p style="color:var(--txt2);font-size:13px">Gráfico indisponível (Chart.js não carregou).</p>';return;}
   chart=new Chart(ctx,{
     type:'bar',
-    data:{labels,datasets:[{label:'Total Gasto',data,backgroundColor:['#38bdf8','#a78bfa','#4ade80','#4ade80','#fb923c','#fb923c','#f87171','#f87171','#94a3b8'],borderRadius:8,barPercentage:.7}]},
+    data:{labels,datasets:[{label:'Total Gasto',data,backgroundColor:['#38bdf8','#a78bfa','#4ade80','#4ade80','#fb923c','#fb923c','#f87171','#94a3b8'],borderRadius:8,barPercentage:.7}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{color:'#94a3b8'}}},
       scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,.05)'}},
@@ -465,6 +472,10 @@ function renderCredit(){
       <div class="prog"><div class="prog-fill" style="width:${Math.min(100,uso)}%;background:${color}"></div></div>
       <div class="lim"><span>Uso: ${uso.toFixed(1).replace('.',',')}%</span>
       <span>Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}</span></div>
+      <div style="display:flex;gap:8px;margin-top:12px;position:relative;flex-wrap:wrap">
+        <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(name)}')">✓ Pagamento efetuado</button>
+        <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(name)}')">↩ Desfazer</button>
+      </div>
     </div>`;
   });
   document.getElementById('ccGrid').innerHTML=html;
@@ -492,19 +503,48 @@ function renderFaturas(){
         <td>${esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
     });
     t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td><td></td></tr></tbody></table></div>`;
+    t+=`<div style="display:flex;gap:8px;margin:12px 0 20px;flex-wrap:wrap">
+      <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(name)}')">✓ Pagamento efetuado — ${esc(name)}</button>
+      <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(name)}')">↩ Desfazer pagamento</button>
+    </div>`;
     out+=t;
   });
   document.getElementById('faturasContent').innerHTML=out;
 }
 function renderCronograma(){
-  const rows=DB.cronograma||[];
-  if(!rows.length) return;
-  const head=rows[0];
-  let t='<thead><tr>'+head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')+'</tr></thead><tbody>';
-  rows.slice(1).forEach(r=>{
-    t+='<tr>'+r.map((c,i)=>`<td>${i===0?esc(c):esc(c)}</td>`).join('')+'</tr>';
+  let out='';
+  CRON_SECTIONS.forEach(sec=>{
+    const rows=DB[sec.key]||[];
+    if(!rows.length) return;
+    const head=rows[0];
+    let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
+      <h3 class="sec-title" style="margin:0 0 10px;color:${sec.color}">${esc(sec.label)}<span class="line"></span></h3>
+      <table><thead><tr>${head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')}</tr></thead><tbody>`;
+    rows.slice(1).forEach(r=>{
+      const isSub=/^subtotal/i.test(cell(r,0));
+      const cls=isSub?' style="background:rgba(56,189,248,.08);font-weight:700"':'';
+      t+='<tr'+cls+'>'+r.map((c,i)=>`<td>${esc(c)}</td>`).join('')+'</tr>';
+    });
+    t+='</tbody></table></div>';
+    out+=t;
   });
-  document.getElementById('cronTable').innerHTML=t+'</tbody>';
+  // Resumo consolidado
+  const rows=DB.cronograma||[];
+  if(rows.length){
+    const head=rows[0];
+    let t=`<div class="glass tbl-wrap">
+      <h3 class="sec-title" style="margin:0 0 10px;color:var(--purple)">Resumo Consolidado<span class="line"></span></h3>
+      <table><thead><tr>${head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')}</tr></thead><tbody>`;
+    rows.slice(1).forEach(r=>{
+      const isSub=/^subtotal/i.test(cell(r,0));
+      const isTotal=/^total geral/i.test(cell(r,0));
+      const cls=isSub?' style="background:rgba(56,189,248,.08);font-weight:700"':isTotal?' style="background:rgba(167,139,250,.12);font-weight:800"':'';
+      t+='<tr'+cls+'>'+r.map((c,i)=>`<td>${esc(c)}</td>`).join('')+'</tr>';
+    });
+    t+='</tbody></table></div>';
+    out+=t;
+  }
+  document.getElementById('cronContent').innerHTML=out;
 }
 function renderInvest(){
   const rows=(DB.investimentos||[]).slice(1);
@@ -563,7 +603,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycby_K9EXEB50O-RHInBp4TBDhJzeYMy38FUSg9l9XY1sBSQc_njH8oA0UzYdKsjUMO0/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxYDEgDpgJdZnwjTT4KbN7kltyF7AF7xxIULZgdGGini93fjEAZR9yPCWpQezvrPKJgRw/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -619,6 +659,33 @@ function cancelarLancamento(id){
     }, 3000);
   }).catch(function(){
     statusEl.className='err'; statusEl.textContent='❌ Erro ao cancelar. Tente novamente.';
+  });
+}
+/* ================= PAGAMENTO EFETUADO / DESFAZER ================= */
+function pagarCartao(cartao){
+  if(!confirm('Confirmar pagamento da fatura ' + cartao + '? A fatura será zerada, a próxima será montada com os gastos fixos e o limite será liberado.')) return;
+  var btn = event.target; if(btn) btn.disabled = true;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'pagar', cartao:cartao })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); if(btn) btn.disabled = false; }, 3500);
+  }).catch(function(){
+    alert('Erro ao registrar pagamento. Tente novamente.');
+    if(btn) btn.disabled = false;
+  });
+}
+function desfazerPagamento(cartao){
+  if(!confirm('Desfazer o último pagamento de ' + cartao + '? Disponível por até 2 dias.')) return;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'desfazer', cartao:cartao })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); }, 3500);
+  }).catch(function(){
+    alert('Erro ao desfazer pagamento. Tente novamente.');
   });
 }
 /* ================= NAV ================= */
