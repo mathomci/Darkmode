@@ -366,7 +366,7 @@ const CRON_SECTIONS = [
   {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
   {label:'Inter', key:'cronInter', color:'#f87171'},
   {label:'Mercado Pago', key:'cronMP', color:'#fb923c'},
-  {label:'Repasses PIX', key:'cronRepasses', color:'#2dd4bf'}
+  {label:'Repasses PIX + Investimentos', key:'cronRepasses', color:'#2dd4bf'}
 ];
 const REPASSES = { viagem:185, beli:274.80, reserva:100 };
 const SHORT_LABEL = {
@@ -632,7 +632,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbzyYglA2QJdgSDKTQOF265sJcxnVtZ_5c_wrAQ40DNcS9Tc-AP-lnKO2t6VBwfrBEKLkg/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwtJDEFIKr-DRO19HEEJEt2bjjpYthrAqHYt9FM8hfg_KrSyaOjwFxSfgq_D08aPaAhUQ/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
