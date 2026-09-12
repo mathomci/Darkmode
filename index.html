@@ -10,7 +10,7 @@
 :root{
   --bg:#0a0e1a;--card:rgba(255,255,255,.055);--border:rgba(255,255,255,.1);
   --txt:#fff;--txt2:#94a3b8;--blue:#38bdf8;--green:#4ade80;--red:#f87171;
-  --purple:#a78bfa;--orange:#fb923c;--teal:#2dd4bf;
+  --purple:#a78bfa;--orange:#fb923c;--teal:#2dd4bf;--pink:#f472b6;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -239,6 +239,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Inter">Cartão Inter</option>
             <option value="Mercado Pago">Cartão Mercado Pago</option>
             <option value="Nubank">Cartão Nubank</option>
+            <option value="Riachuelo">Cartão Riachuelo</option>
           </select>
         </div>
         <div class="form-row">
@@ -355,17 +356,21 @@ const GIDS = {
   resumo:0, limites:541806221, faturas:2070944204, extrato:1171372127,
   cronograma:1731209628, investimentos:1278202952, mensal:1583243318,
   bradesco:1531971815, inter:1033034888, mp:1004144872, nubank:1136662366,
+  riachuelo:1071605803,
   lancamentos:898101089,
-  cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957
+  cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957,
+  cronRiachuelo:1658638578
 };
 const CARD_KEY = {
   'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
-  'Mercado Pago Visa':'mercado pago', 'Nubank Mastercard':'nubank'
+  'Mercado Pago Visa':'mercado pago', 'Nubank Mastercard':'nubank',
+  'Riachuelo':'riachuelo'
 };
 const CRON_SECTIONS = [
   {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
   {label:'Inter', key:'cronInter', color:'#f87171'},
   {label:'Mercado Pago', key:'cronMP', color:'#fb923c'},
+  {label:'Riachuelo', key:'cronRiachuelo', color:'#f472b6'},
   {label:'Repasses PIX + Investimentos', key:'cronRepasses', color:'#2dd4bf'}
 ];
 const REPASSES = { viagem:185, beli:274.80, reserva:100 };
@@ -493,7 +498,7 @@ function renderCredit(){
     const fat=parseNum(fatRow?cell(fatRow,1):''), venc=fatRow?cell(fatRow,2):'';
     const color=uso>80?'var(--red)':uso>50?'var(--orange)':'var(--blue)';
     const tag=status.toLowerCase()==='crítico'?'t-red':status.toLowerCase()==='alerta'?'t-orange':status.toLowerCase()==='normal'?'t-blue':'t-grey';
-    const c1=name.startsWith('Bradesco')?'#38bdf8':name.startsWith('Inter')?'#f87171':name.startsWith('Mercado')?'#fb923c':'#64748b';
+    const c1=name.startsWith('Bradesco')?'#38bdf8':name.startsWith('Inter')?'#f87171':name.startsWith('Mercado')?'#fb923c':name.startsWith('Riachuelo')?'#f472b6':'#64748b';
     html+=`<div class="glass cc" style="--cc1:${c1};--cc2:${c1}">
       <div class="top"><span class="name">${esc(name)}</span><span class="tag ${tag}">${esc(status)}</span></div>
       <div class="fatura">${fat!==null?fmtBRL(fat):'—'}</div>
@@ -518,7 +523,7 @@ function renderCredit(){
   document.getElementById('limTable').innerHTML=t+'</tbody>';
 }
 function renderFaturas(){
-  const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b']];
+  const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b'],['Riachuelo','riachuelo','#f472b6']];
   let out='';
   cards.forEach(([name,keySheet,color])=>{
     const rows=(DB[keySheet]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
@@ -632,7 +637,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwtJDEFIKr-DRO19HEEJEt2bjjpYthrAqHYt9FM8hfg_KrSyaOjwFxSfgq_D08aPaAhUQ/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbyLuAmFm3RQIiBqeYBpBBzI-mJdztLJbibk8Fyv2QZpp9cY7pu7W4VA9pTfRUyYnLTZ4g/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
