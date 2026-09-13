@@ -147,6 +147,9 @@ tr.hl{background:rgba(167,139,250,.08);font-weight:700}
 #antStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
 #antStatus.ok{color:var(--green)}
 #antStatus.err{color:var(--red)}
+#transStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#transStatus.ok{color:var(--green)}
+#transStatus.err{color:var(--red)}
 footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
 @media(max-width:640px){
   .wrap{padding:18px 14px 48px}
@@ -176,7 +179,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(74,222,128,.25),rgba(74,222,128,.05))">➕</div>
         <h3>Novo Lançamento</h3>
-        <p>Registre uma entrada ou saída direto na página.</p>
+        <p>Registre entrada/saída e transfira entre contas.</p>
       </button>
       <button class="nav-card" onclick="go('cancelar')">
         <span class="nav-arrow">→</span>
@@ -188,13 +191,13 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(56,189,248,.05))">📊</div>
         <h3>Visão Geral</h3>
-        <p>KPIs completos, análise de liquidez e projeção mensal de gastos.</p>
+        <p>KPIs, saldo por conta, liquidez e projeção mensal.</p>
       </button>
       <button class="nav-card" onclick="go('credit')">
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
         <h3>Gestão de Crédito</h3>
-        <p>Limites, uso por cartão, pagamento efetuado, desfazer, repasses e antecipação.</p>
+        <p>Limites, pagamento, desfazer, repasses e antecipação.</p>
       </button>
       <button class="nav-card" onclick="go('faturas')">
         <span class="nav-arrow">→</span>
@@ -235,7 +238,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         </div>
         <div class="field">
           <label>Categoria / Origem</label>
-          <select id="categoria" required>
+          <select id="categoria" onchange="toggleConta()" required>
             <option value="">Selecione…</option>
             <option value="PIX">PIX (Conta Corrente)</option>
             <option value="Bradesco">Cartão Bradesco</option>
@@ -243,6 +246,16 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Mercado Pago">Cartão Mercado Pago</option>
             <option value="Nubank">Cartão Nubank</option>
             <option value="Riachuelo">Cartão Riachuelo</option>
+          </select>
+        </div>
+        <div class="field" id="contaField" style="display:none">
+          <label>Conta (PIX)</label>
+          <select id="conta">
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Midway">Midway</option>
           </select>
         </div>
         <div class="form-row">
@@ -283,6 +296,43 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
       </form>
       <p id="status"></p>
     </div>
+    <h3 class="sec-title">Transferir entre contas<span class="line"></span></h3>
+    <div class="glass form-card">
+      <div class="form-row">
+        <div class="field">
+          <label>Origem</label>
+          <select id="transOrigem">
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Midway">Midway</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Destino</label>
+          <select id="transDestino">
+            <option value="Midway">Midway</option>
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="transValor" step="0.01" min="0" placeholder="0,00">
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="transData">
+        </div>
+      </div>
+      <button class="btn" onclick="transferirContas()">⇄ Transferir</button>
+      <p id="transStatus"></p>
+    </div>
   </section>
   <!-- ============ VIEW: CANCELAR LANÇAMENTO ============ -->
   <section class="view" id="view-cancelar">
@@ -295,6 +345,8 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
     <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Visão Geral</span></div>
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="glass liq" id="liqCard"></div>
+    <h3 class="sec-title">Saldo por Conta<span class="line"></span></h3>
+    <div class="glass tbl-wrap"><table id="contasTable"></table></div>
     <div class="glass chart-box">
       <h3 class="sec-title" style="margin-top:0">Projeção de Gastos Fixos<span class="line"></span></h3>
       <div style="height:300px"><canvas id="chartMensal"></canvas></div>
@@ -387,7 +439,7 @@ const GIDS = {
   resumo:0, limites:541806221, faturas:2070944204, extrato:1171372127,
   cronograma:1731209628, investimentos:1278202952, mensal:1583243318,
   bradesco:1531971815, inter:1033034888, mp:1004144872, nubank:1136662366,
-  riachuelo:1071605803,
+  riachuelo:1071605803, contas:600244146,
   lancamentos:898101089,
   cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957,
   cronRiachuelo:1658638578
@@ -467,7 +519,7 @@ async function loadAll(){
 }
 /* ================= RENDER ================= */
 function renderAll(){
-  renderChips(); renderOverview(); renderCredit(); renderFaturas();
+  renderChips(); renderOverview(); renderContas(); renderCredit(); renderFaturas();
   renderCronograma(); renderInvest(); renderExtrato(); renderLancamentos();
   atualizarPrevisaoAntecipacao();
 }
@@ -508,6 +560,17 @@ function renderOverview(){
     <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
     <div class="row"><span style="font-size:12px;color:var(--txt2)">Liquidez após faturas do mês: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong></span></div>`;
   renderChart();
+}
+function renderContas(){
+  const rows=(DB.contas||[]).slice(1);
+  let t='<thead><tr><th>Conta</th><th>Tipo</th><th>Saldo</th><th>Detalhe</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const n=parseNum(cell(r,2));
+    const isTotal=/^total/i.test(cell(r,0));
+    t+=`<tr${isTotal?' class="hl"':''}><td>${esc(cell(r,0))}</td><td>${esc(cell(r,1))}</td>
+      <td>${n!==null?fmtBRL(n):esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
+  });
+  document.getElementById('contasTable').innerHTML=t+'</tbody>';
 }
 function renderChart(){
   const rows=(DB.mensal||[]).slice(1);
@@ -672,22 +735,28 @@ function renderLancamentos(){
   });
   el.innerHTML=t+'</tbody>';
 }
-/* ================= PARCELAMENTO ================= */
+/* ================= PARCELAMENTO / CONTA ================= */
 function toggleParcelamento(){
   var sim = document.getElementById('parcelado').value === 'sim';
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
+function toggleConta(){
+  var pix = document.getElementById('categoria').value === 'PIX';
+  document.getElementById('contaField').style.display = pix ? 'block' : 'none';
+}
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwamRrKJZuGpvJha3RlnsiVTdDMe8G3NqWUuMHpoQy2jKtOHtrEA8spj8UWquPvl7scAQ/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwPXnlIhos27MAZegGNZQNoByxn0jxuvaOuASCQX8b-lBpBXjutjyh07s9jzGjockK6Lg/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
   var btn = document.getElementById('btnSalvar');
   statusEl.className=''; statusEl.textContent='Salvando…';
   btn.disabled = true; btn.textContent = 'Enviando…';
+  var categoria = document.getElementById('categoria').value;
+  if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
   var dados = {
     data: document.getElementById('data').value,
-    categoria: document.getElementById('categoria').value,
+    categoria: categoria,
     valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
     tipo: document.getElementById('tipo').value,
     descricao: document.getElementById('descricao').value,
@@ -703,6 +772,7 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
     statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';
     document.getElementById('formLancamento').reset();
     document.getElementById('parcelaFields').style.display='none';
+    document.getElementById('contaField').style.display='none';
     document.getElementById('data').value = new Date().toISOString().split('T')[0];
     setTimeout(function(){
       if (typeof loadAll === 'function') { loadAll(); }
@@ -715,6 +785,38 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
     btn.disabled = false; btn.textContent = 'Salvar lançamento';
   });
 });
+/* ================= TRANSFERIR ENTRE CONTAS ================= */
+function transferirContas(){
+  var origem = document.getElementById('transOrigem').value;
+  var destino = document.getElementById('transDestino').value;
+  var valor = document.getElementById('transValor').value;
+  var data = document.getElementById('transData').value || new Date().toISOString().split('T')[0];
+  var transStatus = document.getElementById('transStatus');
+  if(!valor || parseFloat(valor.replace(',', '.')) <= 0){
+    transStatus.className='err'; transStatus.textContent='Informe um valor válido.'; return;
+  }
+  if(origem === destino){
+    transStatus.className='err'; transStatus.textContent='Origem e destino devem ser diferentes.'; return;
+  }
+  var v = parseFloat(valor.replace(',', '.'));
+  if(!confirm('Transferir ' + fmtBRL(v) + ' de ' + origem + ' para ' + destino + '?')) return;
+  transStatus.className=''; transStatus.textContent='Transferindo…';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'transferir', origem:origem, destino:destino, valor:v, data:data })
+  }).then(function(){
+    transStatus.className='ok'; transStatus.textContent='✅ Transferência registrada! Atualizando…';
+    document.getElementById('transValor').value='';
+    setTimeout(function(){
+      if (typeof loadAll === 'function') loadAll();
+      else location.reload();
+      transStatus.textContent='';
+    }, 3000);
+  }).catch(function(){
+    transStatus.className='err'; transStatus.textContent='❌ Erro ao transferir. Tente novamente.';
+  });
+}
 /* ================= CANCELAR LANÇAMENTO ================= */
 function cancelarLancamento(id){
   if(!id){ alert('Lançamento sem identificador.'); return; }
@@ -867,6 +969,7 @@ function go(view){
 }
 /* ================= INIT ================= */
 document.getElementById('data').value = new Date().toISOString().split('T')[0];
+document.getElementById('transData').value = new Date().toISOString().split('T')[0];
 loadAll();
 </script>
 </body>
