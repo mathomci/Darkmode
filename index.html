@@ -144,6 +144,9 @@ tr.hl{background:rgba(167,139,250,.08);font-weight:700}
 #invStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
 #invStatus.ok{color:var(--green)}
 #invStatus.err{color:var(--red)}
+#antStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#antStatus.ok{color:var(--green)}
+#antStatus.err{color:var(--red)}
 footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
 @media(max-width:640px){
   .wrap{padding:18px 14px 48px}
@@ -191,7 +194,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
         <h3>Gestão de Crédito</h3>
-        <p>Limites, uso por cartão, pagamento efetuado, desfazer e repasses.</p>
+        <p>Limites, uso por cartão, pagamento efetuado, desfazer, repasses e antecipação.</p>
       </button>
       <button class="nav-card" onclick="go('faturas')">
         <span class="nav-arrow">→</span>
@@ -209,7 +212,7 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
         <span class="nav-arrow">→</span>
         <div class="nav-icon" style="background:linear-gradient(135deg,rgba(45,212,191,.25),rgba(45,212,191,.05))">📈</div>
         <h3>Investimentos</h3>
-        <p>Reservas acumuladas e rendimento estimado.</p>
+        <p>Reservas acumuladas, aportes e resgates.</p>
       </button>
       <button class="nav-card" onclick="go('extrato')">
         <span class="nav-arrow">→</span>
@@ -312,6 +315,24 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
       </div>
       <p style="font-size:11px;color:var(--txt2);margin-top:10px">Confirme cada repasse após fazer o PIX. O valor é registrado no extrato e deduzido do saldo automaticamente.</p>
     </div>
+    <h3 class="sec-title">Antecipação de Parcelas<span class="line"></span></h3>
+    <div class="glass" style="padding:22px">
+      <div class="field">
+        <label>Cartão</label>
+        <select id="antCartao" onchange="atualizarPrevisaoAntecipacao()">
+          <option value="riachuelo">Riachuelo</option>
+          <option value="bradesco">Bradesco</option>
+          <option value="inter">Inter</option>
+          <option value="mercado pago">Mercado Pago</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:6px">
+        <span style="font-size:13px;color:var(--txt2)">Total restante em parcelas: <strong id="antTotal" style="color:var(--orange)">—</strong></span>
+        <button class="btn" onclick="anteciparParcelas()">⚡ Antecipar e quitar parcelas</button>
+      </div>
+      <p style="font-size:11px;color:var(--txt2);margin-top:10px">A antecipação quita todas as parcelas restantes do cartão de uma vez, zera a fatura, libera o limite e desconta o total do saldo da conta.</p>
+      <p id="antStatus"></p>
+    </div>
   </section>
   <!-- ============ VIEW: FATURAS ============ -->
   <section class="view" id="view-faturas">
@@ -327,19 +348,29 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
   <section class="view" id="view-invest">
     <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Investimentos</span></div>
     <div class="inv-grid" id="invGrid"></div>
-    <h3 class="sec-title">Atualizar Investimentos<span class="line"></span></h3>
+    <h3 class="sec-title">Movimentar Investimentos<span class="line"></span></h3>
     <div class="glass form-card">
       <div class="form-row">
         <div class="field">
-          <label>Valor Inter (R$)</label>
-          <input type="number" id="invInter" step="0.01" min="0" placeholder="0,00">
+          <label>Conta</label>
+          <select id="invConta">
+            <option value="inter">Inter (Reserva de Emergência)</option>
+            <option value="nubank">Nubank (Férias Argentina)</option>
+          </select>
         </div>
         <div class="field">
-          <label>Valor Nubank (R$)</label>
-          <input type="number" id="invNubank" step="0.01" min="0" placeholder="0,00">
+          <label>Tipo</label>
+          <select id="invTipo">
+            <option value="adicionar">➕ Adicionar (aporte)</option>
+            <option value="retirar">➖ Retirar (resgate)</option>
+          </select>
         </div>
       </div>
-      <button class="btn" id="btnInv" onclick="salvarInvestimentos()">Atualizar investimentos</button>
+      <div class="field">
+        <label>Valor (R$)</label>
+        <input type="number" id="invValor" step="0.01" min="0" placeholder="0,00">
+      </div>
+      <button class="btn" id="btnInv" onclick="movimentarInvestimento()">Confirmar movimentação</button>
       <p id="invStatus"></p>
     </div>
   </section>
@@ -365,6 +396,9 @@ const CARD_KEY = {
   'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
   'Mercado Pago Visa':'mercado pago', 'Nubank Mastercard':'nubank',
   'Riachuelo':'riachuelo'
+};
+const CRON_KEY_MAP = {
+  'bradesco':'cronBradesco', 'inter':'cronInter', 'mercado pago':'cronMP', 'riachuelo':'cronRiachuelo'
 };
 const CRON_SECTIONS = [
   {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
@@ -435,6 +469,7 @@ async function loadAll(){
 function renderAll(){
   renderChips(); renderOverview(); renderCredit(); renderFaturas();
   renderCronograma(); renderInvest(); renderExtrato(); renderLancamentos();
+  atualizarPrevisaoAntecipacao();
 }
 function renderChips(){
   const rows=(DB.resumo||[]).slice(1);
@@ -643,7 +678,7 @@ function toggleParcelamento(){
   document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxwDizuqvE9AZho1dAYUZ4NVNYbQ0RvTd0n-1qIEohAuI6t620E1-jWVL3sTQpTBxC0/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwamRrKJZuGpvJha3RlnsiVTdDMe8G3NqWUuMHpoQy2jKtOHtrEA8spj8UWquPvl7scAQ/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -745,34 +780,82 @@ function confirmarRepasse(tipo){
     alert('Erro ao confirmar repasse. Tente novamente.');
   });
 }
-/* ================= ATUALIZAR INVESTIMENTOS ================= */
-function salvarInvestimentos(){
+/* ================= MOVIMENTAR INVESTIMENTOS ================= */
+function movimentarInvestimento(){
   var invStatus = document.getElementById('invStatus');
   var btn = document.getElementById('btnInv');
-  var vInter = document.getElementById('invInter').value;
-  var vNubank = document.getElementById('invNubank').value;
-  if(!vInter && !vNubank){ invStatus.className='err'; invStatus.textContent='Preencha ao menos um valor.'; return; }
-  invStatus.className=''; invStatus.textContent='Atualizando…';
+  var conta = document.getElementById('invConta').value;
+  var tipo = document.getElementById('invTipo').value;
+  var valor = document.getElementById('invValor').value;
+  if(!valor || parseFloat(valor.replace(',', '.')) <= 0){
+    invStatus.className='err'; invStatus.textContent='Informe um valor válido.'; return;
+  }
+  invStatus.className=''; invStatus.textContent='Processando…';
   btn.disabled = true;
-  var chamadas = [];
-  if(vInter) chamadas.push(
-    fetch(URL_SCRIPT, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'investimento', conta:'inter', valor: parseFloat(vInter.replace(',','.'))})}));
-  if(vNubank) chamadas.push(
-    fetch(URL_SCRIPT, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'investimento', conta:'nubank', valor: parseFloat(vNubank.replace(',','.'))})}));
-  Promise.all(chamadas).then(function(){
-    invStatus.className='ok'; invStatus.textContent='✅ Investimentos atualizados! Atualizando dados…';
-    document.getElementById('invInter').value='';
-    document.getElementById('invNubank').value='';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'investimento', conta:conta, tipo:tipo, valor: parseFloat(valor.replace(',', '.')) })
+  }).then(function(){
+    invStatus.className='ok'; invStatus.textContent='✅ Movimentação registrada! Atualizando…';
+    document.getElementById('invValor').value='';
     setTimeout(function(){
       if (typeof loadAll === 'function') loadAll();
       else location.reload();
       btn.disabled = false; invStatus.textContent='';
     }, 3000);
   }).catch(function(){
-    invStatus.className='err'; invStatus.textContent='❌ Erro ao atualizar. Tente novamente.';
+    invStatus.className='err'; invStatus.textContent='❌ Erro ao movimentar. Tente novamente.';
     btn.disabled = false;
+  });
+}
+/* ================= ANTECIPAÇÃO DE PARCELAS ================= */
+function calcularRestanteParcelas(key){
+  const rows = DB[CRON_KEY_MAP[key]] || [];
+  if(!rows.length) return 0;
+  const head = rows[0];
+  let total = 0;
+  rows.slice(1).forEach(r=>{
+    if(/^subtotal/i.test(cell(r,0))) return;
+    const vb = parseNum(cell(r,1)) || 0;
+    for(let c=2;c<head.length;c++){
+      const vs = cell(r,c);
+      if(vs===''||vs==='—') continue;
+      if(/^\d+\/\d+$/.test(vs)){
+        total += vb>0 ? vb : (parseNum(vs)||0);
+      } else {
+        const vn = parseNum(vs);
+        if(vn!==null && vn>0) total += vn;
+      }
+    }
+  });
+  return total;
+}
+function atualizarPrevisaoAntecipacao(){
+  const key = document.getElementById('antCartao').value;
+  const total = calcularRestanteParcelas(key);
+  document.getElementById('antTotal').textContent = total>0 ? fmtBRL(total) : 'R$ 0,00';
+}
+function anteciparParcelas(){
+  const key = document.getElementById('antCartao').value;
+  const total = calcularRestanteParcelas(key);
+  if(total<=0){ alert('Não há parcelas pendentes para antecipar neste cartão.'); return; }
+  if(!confirm('Antecipar e quitar todas as parcelas deste cartão no valor de ' + fmtBRL(total) + '? O valor será descontado do saldo da conta.')) return;
+  var antStatus = document.getElementById('antStatus');
+  antStatus.className=''; antStatus.textContent='Processando…';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'antecipar', cartao:key })
+  }).then(function(){
+    antStatus.className='ok'; antStatus.textContent='✅ Parcelas antecipadas! Atualizando…';
+    setTimeout(function(){
+      if (typeof loadAll === 'function') loadAll();
+      else location.reload();
+      antStatus.textContent='';
+    }, 3500);
+  }).catch(function(){
+    antStatus.className='err'; antStatus.textContent='❌ Erro ao antecipar. Tente novamente.';
   });
 }
 /* ================= NAV ================= */
