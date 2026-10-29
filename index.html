@@ -501,6 +501,15 @@ function parseNum(v){
   }
   return isNaN(n)?null:n;
 }
+/* parseNumSafe: NUNCA retorna null — retorna 0 e avisa no console */
+function parseNumSafe(v,label){
+  const n=parseNum(v);
+  if(n===null){
+    console.warn('[parseNumSafe] valor não reconhecido:',JSON.stringify(v),'| item:',label);
+    return 0;
+  }
+  return n;
+}
 function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 /* ================= LOAD ================= */
@@ -638,8 +647,11 @@ function renderFaturas(){
     const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
     const venc=fatRow?cell(fatRow,2):'';
     const key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
-    let sum=0;rows.forEach(r=>{const n=parseNum(cell(r,1));if(n!==null)sum+=n;});
-    console.log('[Faturas]',name,'itens:',rows.length,'soma:',sum);
+    let sum=0;
+    rows.forEach(r=>{
+      sum+=parseNumSafe(cell(r,1),cell(r,0));
+    });
+    console.log('[Faturas]',name,'itens:',rows.length,'soma:',sum.toFixed(2));
     let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
     rows.forEach(r=>{
