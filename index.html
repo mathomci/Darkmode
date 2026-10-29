@@ -361,7 +361,6 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
     <h3 class="sec-title">Repasses PIX<span class="line"></span></h3>
     <div class="glass" style="padding:22px">
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" onclick="confirmarRepasse('viagem')">✈️ Confirmar repasse viagem (R$ 185,00)</button>
         <button class="btn" onclick="confirmarRepasse('beli')">💸 Confirmar PIX Beli (R$ 274,80)</button>
         <button class="btn" onclick="confirmarRepasse('reserva')">🏦 Confirmar repasse reserva (R$ 100,00)</button>
       </div>
@@ -459,7 +458,7 @@ const CRON_SECTIONS = [
   {label:'Riachuelo', key:'cronRiachuelo', color:'#f472b6'},
   {label:'Repasses PIX + Investimentos', key:'cronRepasses', color:'#2dd4bf'}
 ];
-const REPASSES = { viagem:185, beli:274.80, reserva:100 };
+const REPASSES = { beli:274.80, reserva:100 };
 const SHORT_LABEL = {
   'Saldo em Contas':'Saldo', 'Liquidez Real Projetada':'Liquidez',
   'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas':'Faturas'
@@ -486,7 +485,12 @@ function parseCSV(text){
 function cell(r,i){return (r[i]!==undefined&&r[i]!==null)?String(r[i]).trim():'';}
 function parseNum(v){
   if(v===undefined||v===null) return null;
-  let s=String(v).trim().replace(/R\$\s?/gi,'').replace(/%/g,'');
+  let s=String(v)
+    .replace(/[\u00A0\u200B\uFEFF]/g,'')
+    .replace(/"/g,'')
+    .trim()
+    .replace(/R\$\s?/gi,'')
+    .replace(/%/g,'');
   if(s===''||s==='-'||s==='—') return null;
   let n;
   if(s.indexOf(',')>=0){
@@ -630,11 +634,12 @@ function renderFaturas(){
   const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b'],['Riachuelo','riachuelo','#f472b6']];
   let out='';
   cards.forEach(([name,keySheet,color])=>{
-    const rows=(DB[keySheet]||[]).slice(1).filter(r=>!/^total$/i.test(cell(r,0)));
+    const rows=(DB[keySheet]||[]).slice(1).filter(r=>!/total/i.test(cell(r,0)));
     const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
     const venc=fatRow?cell(fatRow,2):'';
     const key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
     let sum=0;rows.forEach(r=>{const n=parseNum(cell(r,1));if(n!==null)sum+=n;});
+    console.log('[Faturas]',name,'itens:',rows.length,'soma:',sum);
     let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
     rows.forEach(r=>{
@@ -745,7 +750,7 @@ function toggleConta(){
   document.getElementById('contaField').style.display = pix ? 'block' : 'none';
 }
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwPXnlIhos27MAZegGNZQNoByxn0jxuvaOuASCQX8b-lBpBXjutjyh07s9jzGjockK6Lg/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxt7Tt663d8Bx_h2c9lQ9jPLc-GC62zuwprCChaaFACycox6vrtAy0VKMLTuKlFLN58BA/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -867,7 +872,7 @@ function desfazerPagamento(key, nome){
 }
 /* ================= CONFIRMAR REPASSE ================= */
 function confirmarRepasse(tipo){
-  var nomes = {viagem:'repasse de viagem', beli:'PIX para Beli', reserva:'repasse de reserva'};
+  var nomes = {beli:'PIX para Beli', reserva:'repasse de reserva'};
   var valor = REPASSES[tipo];
   if(!valor){ alert('Tipo de repasse não reconhecido.'); return; }
   var label = 'R$ ' + valor.toFixed(2).replace('.', ',');
