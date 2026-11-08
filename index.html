@@ -664,13 +664,21 @@ async function loadSheet(key){
 }
 async function loadAll(){
   document.getElementById('meta').textContent='Atualizando…';
-  try{
-    await Promise.all(Object.keys(GIDS).map(loadSheet));
-    renderAll();
+  const keys = Object.keys(GIDS);
+  const results = await Promise.allSettled(keys.map(loadSheet));
+  const falhas = [];
+  results.forEach((r,i)=>{
+    if(r.status==='rejected'){
+      falhas.push(keys[i]);
+      DB[keys[i]] = DB[keys[i]] || [];
+      console.warn('[loadAll] falhou:', keys[i], r.reason);
+    }
+  });
+  renderAll();
+  if(falhas.length){
+    document.getElementById('meta').textContent='Parcial · falhou: '+falhas.join(', ');
+  } else {
     document.getElementById('meta').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
-  }catch(e){
-    document.getElementById('meta').textContent='Erro ao carregar dados';
-    console.error(e);
   }
 }
 
