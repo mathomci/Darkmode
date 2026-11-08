@@ -150,6 +150,9 @@ tr.hl{background:rgba(167,139,250,.08);font-weight:700}
 #transStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
 #transStatus.ok{color:var(--green)}
 #transStatus.err{color:var(--red)}
+#repStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#repStatus.ok{color:var(--green)}
+#repStatus.err{color:var(--red)}
 footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
 @media(max-width:640px){
   .wrap{padding:18px 14px 48px}
@@ -161,82 +164,102 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
 </style>
 </head>
 <body>
-<div class="wrap">
+
+
   <header>
     <h1>Controle Orçamentário</h1>
     <p>Matheus Homci · Dashboard pessoal · Dados da planilha</p>
-    <span class="badge">Cenário: Out/2026 em diante</span>
-    <div class="toolbar">
+    Cenário: Out/2026 em diante
+
+
       <button class="btn" onclick="loadAll()">↻ Atualizar dados</button>
-      <span class="meta" id="meta">Carregando…</span>
-    </div>
+      Carregando…
+
+
   </header>
-  <div class="chips" id="chips"></div>
+
+
+
+
   <!-- ============ VIEW: HOME (HUB) ============ -->
   <section class="view active" id="view-home">
-    <div class="nav-grid">
+
+
       <button class="nav-card" onclick="go('lancamento')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(74,222,128,.25),rgba(74,222,128,.05))">➕</div>
+        →
+        ➕
         <h3>Novo Lançamento</h3>
         <p>Registre entrada/saída e transfira entre contas.</p>
       </button>
       <button class="nav-card" onclick="go('cancelar')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(248,113,113,.25),rgba(248,113,113,.05))">🗑️</div>
+        →
+        🗑️
         <h3>Cancelar Lançamento</h3>
         <p>Remova um lançamento registrado e reverta seus efeitos.</p>
       </button>
       <button class="nav-card" onclick="go('overview')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(56,189,248,.05))">📊</div>
+        →
+        📊
         <h3>Visão Geral</h3>
         <p>KPIs, saldo por conta, liquidez e projeção mensal.</p>
       </button>
       <button class="nav-card" onclick="go('credit')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(167,139,250,.05))">💳</div>
+        →
+        💳
         <h3>Gestão de Crédito</h3>
         <p>Limites, pagamento, desfazer, repasses e antecipação.</p>
       </button>
       <button class="nav-card" onclick="go('faturas')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(74,222,128,.25),rgba(74,222,128,.05))">🧾</div>
+        →
+        🧾
         <h3>Faturas</h3>
         <p>Detalhamento completo de cada fatura do mês.</p>
       </button>
       <button class="nav-card" onclick="go('cronograma')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(251,146,60,.25),rgba(251,146,60,.05))">📅</div>
+        →
+        📅
         <h3>Cronograma</h3>
         <p>Parcelamentos por cartão e obrigações mês a mês.</p>
       </button>
       <button class="nav-card" onclick="go('invest')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(45,212,191,.25),rgba(45,212,191,.05))">📈</div>
+        →
+        📈
         <h3>Investimentos</h3>
         <p>Reservas acumuladas, aportes e resgates.</p>
       </button>
       <button class="nav-card" onclick="go('extrato')">
-        <span class="nav-arrow">→</span>
-        <div class="nav-icon" style="background:linear-gradient(135deg,rgba(248,113,113,.25),rgba(248,113,113,.05))">📋</div>
+        →
+        📋
         <h3>Extrato</h3>
         <p>Entradas e saídas registradas no período.</p>
       </button>
-    </div>
+      <button class="nav-card" onclick="go('repasses')">
+        →
+        💸
+        <h3>Repasses Futuros</h3>
+        <p>Receitas e saídas previstas do mês, com conclusão e recorrência.</p>
+      </button>
+
+
     <footer>Dados lidos direto do Google Sheets · Atualize a página ou clique em "Atualizar dados"</footer>
   </section>
+
+
   <!-- ============ VIEW: NOVO LANÇAMENTO ============ -->
   <section class="view" id="view-lancamento">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Novo Lançamento</span></div>
-    <div class="glass form-card">
-      <h3 class="sec-title" style="margin-top:0">Registrar lançamento<span class="line"></span></h3>
+    <button onclick="go('home')">← Início</button>/Novo Lançamento
+
+
+      <h3 class="sec-title" style="margin-top:0">Registrar lançamento</h3>
       <form id="formLancamento">
-        <div class="field">
+
+
           <label>Data</label>
           <input type="date" id="data">
-        </div>
-        <div class="field">
+
+
+
+
           <label>Categoria / Origem</label>
           <select id="categoria" onchange="toggleConta()" required>
             <option value="">Selecione…</option>
@@ -247,8 +270,10 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Nubank">Cartão Nubank</option>
             <option value="Riachuelo">Cartão Riachuelo</option>
           </select>
-        </div>
-        <div class="field" id="contaField" style="display:none">
+
+
+
+
           <label>Conta (PIX)</label>
           <select id="conta">
             <option value="Bradesco">Bradesco</option>
@@ -257,49 +282,70 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Nubank">Nubank</option>
             <option value="Midway">Midway</option>
           </select>
-        </div>
-        <div class="form-row">
-          <div class="field">
+
+
+
+
+
+
             <label>Valor (R$)</label>
             <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required>
-          </div>
-          <div class="field">
+
+
+
+
             <label>Tipo</label>
             <select id="tipo">
               <option value="saida">Saída</option>
               <option value="entrada">Entrada</option>
             </select>
-          </div>
-        </div>
-        <div class="field">
+
+
+
+
+
+
           <label>Parcelado?</label>
           <select id="parcelado" onchange="toggleParcelamento()">
             <option value="nao">À vista</option>
             <option value="sim">Parcelado</option>
           </select>
-        </div>
-        <div class="form-row" id="parcelaFields" style="display:none">
-          <div class="field">
+
+
+
+
+
+
             <label>Nº de parcelas</label>
             <input type="number" id="parcelas" min="1" max="24" value="1">
-          </div>
-          <div class="field">
+
+
+
+
             <label>Parcela atual</label>
             <input type="number" id="parcelaAtual" min="1" max="24" value="1">
-          </div>
-        </div>
-        <div class="field">
+
+
+
+
+
+
           <label>Descrição</label>
           <input type="text" id="descricao" placeholder="Ex.: Pissolati Café, mercado, salário…" required>
-        </div>
+
+
         <button type="submit" class="btn" id="btnSalvar">Salvar lançamento</button>
       </form>
       <p id="status"></p>
-    </div>
-    <h3 class="sec-title">Transferir entre contas<span class="line"></span></h3>
-    <div class="glass form-card">
-      <div class="form-row">
-        <div class="field">
+
+
+    <h3 class="sec-title">Transferir entre contas</h3>
+
+
+
+
+
+
           <label>Origem</label>
           <select id="transOrigem">
             <option value="Bradesco">Bradesco</option>
@@ -308,8 +354,10 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Nubank">Nubank</option>
             <option value="Midway">Midway</option>
           </select>
-        </div>
-        <div class="field">
+
+
+
+
           <label>Destino</label>
           <select id="transDestino">
             <option value="Midway">Midway</option>
@@ -318,57 +366,83 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
             <option value="Mercado Pago">Mercado Pago</option>
             <option value="Nubank">Nubank</option>
           </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="field">
+
+
+
+
+
+
+
+
           <label>Valor (R$)</label>
           <input type="number" id="transValor" step="0.01" min="0" placeholder="0,00">
-        </div>
-        <div class="field">
+
+
+
+
           <label>Data</label>
           <input type="date" id="transData">
-        </div>
-      </div>
+
+
+
+
       <button class="btn" onclick="transferirContas()">⇄ Transferir</button>
       <p id="transStatus"></p>
-    </div>
+
+
   </section>
+
+
   <!-- ============ VIEW: CANCELAR LANÇAMENTO ============ -->
   <section class="view" id="view-cancelar">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Cancelar Lançamento</span></div>
-    <div class="glass tbl-wrap"><table id="lancTable"></table></div>
+    <button onclick="go('home')">← Início</button>/Cancelar Lançamento
+    <table id="lancTable"></table>
     <p id="cancelStatus"></p>
   </section>
+
+
   <!-- ============ VIEW: VISÃO GERAL ============ -->
   <section class="view" id="view-overview">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Visão Geral</span></div>
-    <div class="kpi-grid" id="kpiGrid"></div>
-    <div class="glass liq" id="liqCard"></div>
-    <h3 class="sec-title">Saldo por Conta<span class="line"></span></h3>
-    <div class="glass tbl-wrap"><table id="contasTable"></table></div>
-    <div class="glass chart-box">
-      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos Fixos<span class="line"></span></h3>
-      <div style="height:300px"><canvas id="chartMensal"></canvas></div>
-    </div>
+    <button onclick="go('home')">← Início</button>/Visão Geral
+
+
+
+
+    <h3 class="sec-title">Saldo por Conta</h3>
+    <table id="contasTable"></table>
+
+
+      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos Fixos</h3>
+      <canvas id="chartMensal"></canvas>
+
+
   </section>
+
+
   <!-- ============ VIEW: CRÉDITO ============ -->
   <section class="view" id="view-credit">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Gestão de Crédito</span></div>
-    <div class="cc-grid" id="ccGrid"></div>
-    <h3 class="sec-title">Limites por Cartão<span class="line"></span></h3>
-    <div class="glass tbl-wrap"><table id="limTable"></table></div>
-    <h3 class="sec-title">Repasses PIX<span class="line"></span></h3>
-    <div class="glass" style="padding:22px">
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button onclick="go('home')">← Início</button>/Gestão de Crédito
+
+
+    <h3 class="sec-title">Limites por Cartão</h3>
+    <table id="limTable"></table>
+    <h3 class="sec-title">Repasses PIX</h3>
+
+
+
+
         <button class="btn" onclick="confirmarRepasse('beli')">💸 Confirmar PIX Beli (R$ 274,80)</button>
         <button class="btn" onclick="confirmarRepasse('reserva')">🏦 Confirmar repasse reserva (R$ 100,00)</button>
-      </div>
+
+
       <p style="font-size:11px;color:var(--txt2);margin-top:10px">Confirme cada repasse após fazer o PIX. O valor é registrado no extrato e deduzido do saldo automaticamente.</p>
-    </div>
-    <h3 class="sec-title">Antecipação de Parcelas<span class="line"></span></h3>
-    <div class="glass" style="padding:22px">
-      <div class="field">
+
+
+    <h3 class="sec-title">Antecipação de Parcelas</h3>
+
+
+
+
         <label>Cartão</label>
         <select id="antCartao" onchange="atualizarPrevisaoAntecipacao()">
           <option value="riachuelo">Riachuelo</option>
@@ -376,61 +450,126 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
           <option value="inter">Inter</option>
           <option value="mercado pago">Mercado Pago</option>
         </select>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:6px">
-        <span style="font-size:13px;color:var(--txt2)">Total restante em parcelas: <strong id="antTotal" style="color:var(--orange)">—</strong></span>
+
+
+
+
+        Total restante em parcelas: <strong id="antTotal" style="color:var(--orange)">—</strong>
         <button class="btn" onclick="anteciparParcelas()">⚡ Antecipar e quitar parcelas</button>
-      </div>
+
+
       <p style="font-size:11px;color:var(--txt2);margin-top:10px">A antecipação quita todas as parcelas restantes do cartão de uma vez, zera a fatura, libera o limite e desconta o total do saldo da conta.</p>
       <p id="antStatus"></p>
-    </div>
+
+
   </section>
+
+
   <!-- ============ VIEW: FATURAS ============ -->
   <section class="view" id="view-faturas">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Faturas</span></div>
-    <div id="faturasContent"></div>
+    <button onclick="go('home')">← Início</button>/Faturas
+
+
   </section>
+
+
   <!-- ============ VIEW: CRONOGRAMA ============ -->
   <section class="view" id="view-cronograma">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Cronograma</span></div>
-    <div id="cronContent"></div>
+    <button onclick="go('home')">← Início</button>/Cronograma
+
+
   </section>
+
+
   <!-- ============ VIEW: INVESTIMENTOS ============ -->
   <section class="view" id="view-invest">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Investimentos</span></div>
-    <div class="inv-grid" id="invGrid"></div>
-    <h3 class="sec-title">Movimentar Investimentos<span class="line"></span></h3>
-    <div class="glass form-card">
-      <div class="form-row">
-        <div class="field">
+    <button onclick="go('home')">← Início</button>/Investimentos
+
+
+    <h3 class="sec-title">Movimentar Investimentos</h3>
+
+
+
+
+
+
           <label>Conta</label>
           <select id="invConta">
             <option value="inter">Inter (Reserva de Emergência)</option>
             <option value="nubank">Nubank (Férias Argentina)</option>
           </select>
-        </div>
-        <div class="field">
+
+
+
+
           <label>Tipo</label>
           <select id="invTipo">
             <option value="adicionar">➕ Adicionar (aporte)</option>
             <option value="retirar">➖ Retirar (resgate)</option>
           </select>
-        </div>
-      </div>
-      <div class="field">
+
+
+
+
+
+
         <label>Valor (R$)</label>
         <input type="number" id="invValor" step="0.01" min="0" placeholder="0,00">
-      </div>
+
+
       <button class="btn" id="btnInv" onclick="movimentarInvestimento()">Confirmar movimentação</button>
       <p id="invStatus"></p>
-    </div>
+
+
   </section>
+
+
   <!-- ============ VIEW: EXTRATO ============ -->
   <section class="view" id="view-extrato">
-    <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Extrato</span></div>
-    <div class="glass tbl-wrap"><table id="extTable"></table></div>
+    <button onclick="go('home')">← Início</button>/Extrato
+    <table id="extTable"></table>
   </section>
-</div>
+
+
+  <!-- ============ VIEW: REPASSES FUTUROS ============ -->
+  <section class="view" id="view-repasses">
+    <button onclick="go('home')">← Início</button>/Repasses Futuros
+
+
+    <h3 class="sec-title">Recorrentes</h3>
+    <table id="repRecTable"></table>
+    <h3 class="sec-title">Pontuais</h3>
+    <table id="repPontTable"></table>
+    <h3 class="sec-title">Novo Repasse Futuro</h3>
+
+
+      <label>Descrição</label><input type="text" id="repDesc" placeholder="Ex.: Salário — Quinzena">
+
+
+        <label>Valor (R$)</label><input type="number" id="repValor" step="0.01" min="0" placeholder="0,00">
+        <label>Data Prevista</label><input type="date" id="repData">
+
+
+
+
+        <label>Tipo</label><select id="repTipo"><option value="Receita">Receita</option><option value="Saída">Saída</option></select>
+        <label>Recorrente</label><select id="repRec"><option value="Sim">Sim</option><option value="Não">Não</option></select>
+
+
+      <label>Conta</label><select id="repConta">
+        <option value="Bradesco">Bradesco</option><option value="Inter">Inter</option>
+        <option value="Mercado Pago">Mercado Pago</option><option value="Nubank">Nubank</option>
+        <option value="Midway">Midway</option>
+      </select>
+      <button class="btn" onclick="addRepasse()">Adicionar repasse</button>
+      <p id="repStatus"></p>
+
+
+  </section>
+
+
+
+
 <script>
 /* ================= CONFIG ================= */
 const SHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTn3WVpXjtEOzekF4UXmzQKij_bnjcq3QEKB9Cs5tC3tDa2kE7lsZlg9-dPF25f6Tm6tKi3CmYoLp9S/pub';
@@ -441,7 +580,8 @@ const GIDS = {
   riachuelo:1071605803, contas:600244146,
   lancamentos:898101089,
   cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957,
-  cronRiachuelo:1658638578
+  cronRiachuelo:1658638578,
+  repassesFuturos:449747573
 };
 const CARD_KEY = {
   'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
@@ -464,6 +604,8 @@ const SHORT_LABEL = {
   'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas':'Faturas'
 };
 let DB = {}, chart = null;
+
+
 /* ================= CSV / NUM ================= */
 function parseCSV(text){
   const rows=[];let row=[],field='',q=false;
@@ -511,6 +653,8 @@ function parseNumSafe(v,label){
 }
 function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+
 /* ================= LOAD ================= */
 async function loadSheet(key){
   const url=`${SHEET_BASE}?gid=${GIDS[key]}&single=true&output=csv`;
@@ -529,10 +673,13 @@ async function loadAll(){
     console.error(e);
   }
 }
+
+
 /* ================= RENDER ================= */
 function renderAll(){
   renderChips(); renderOverview(); renderContas(); renderCredit(); renderFaturas();
   renderCronograma(); renderInvest(); renderExtrato(); renderLancamentos();
+  renderRepasses();
   atualizarPrevisaoAntecipacao();
 }
 function renderChips(){
@@ -541,9 +688,9 @@ function renderChips(){
   rows.slice(0,4).forEach(r=>{
     const lbl=SHORT_LABEL[cell(r,0)]||cell(r,0);
     const val=cell(r,1), n=parseNum(val);
-    html+=`<div class="glass chip"><div class="lbl">${esc(lbl)}</div>
-      <div class="val">${n!==null?fmtBRL(n):esc(val)}</div>
-      <div class="sub">${esc(cell(r,2))}</div></div>`;
+    html+=`${esc(lbl)}
+      ${n!==null?fmtBRL(n):esc(val)}
+      ${esc(cell(r,2))}`;
   });
   document.getElementById('chips').innerHTML=html;
 }
@@ -552,9 +699,9 @@ function renderOverview(){
   let grid='';
   rows.slice(0,4).forEach(r=>{
     const n=parseNum(cell(r,1));
-    grid+=`<div class="glass kpi"><div class="lbl">${esc(cell(r,0))}</div>
-      <div class="val">${n!==null?fmtBRL(n):esc(cell(r,1))}</div>
-      <div class="sub">${esc(cell(r,2))}</div></div>`;
+    grid+=`${esc(cell(r,0))}
+      ${n!==null?fmtBRL(n):esc(cell(r,1))}
+      ${esc(cell(r,2))}`;
   });
   document.getElementById('kpiGrid').innerHTML=grid;
   const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
@@ -564,13 +711,16 @@ function renderOverview(){
   const pct=compN!==null?Math.min(100,compN):0;
   const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
   document.getElementById('liqCard').innerHTML=`
-    <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento<span class="line"></span></h3>
-    <div class="row">
-      <span>Margem Livre: <strong>${saldoN!==null?fmtBRL(saldoN):'—'}</strong></span>
-      <span>Comprometimento: <strong style="color:${pct>80?'var(--red)':pct>50?'var(--orange)':'var(--green)'}">${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}</strong></span>
-    </div>
-    <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
-    <div class="row"><span style="font-size:12px;color:var(--txt2)">Liquidez após faturas do mês: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong></span></div>`;
+    <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento</h3>
+
+
+      Margem Livre: <strong>${saldoN!==null?fmtBRL(saldoN):'—'}</strong>
+      Comprometimento: <strong style="color:${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}">${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}</strong>
+
+
+
+
+    Liquidez após faturas do mês: <strong>${liqN!==null?fmtBRL(liqN):'—'}</strong>`;
   renderChart();
 }
 function renderContas(){
@@ -580,7 +730,8 @@ function renderContas(){
     const n=parseNum(cell(r,2));
     const isTotal=/^total/i.test(cell(r,0));
     t+=`<tr${isTotal?' class="hl"':''}><td>${esc(cell(r,0))}</td><td>${esc(cell(r,1))}</td>
-      <td>${n!==null?fmtBRL(n):esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
+      <td>${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
+      <td>${esc(cell(r,3))}</td></tr>`;
   });
   document.getElementById('contasTable').innerHTML=t+'</tbody>';
 }
@@ -615,26 +766,30 @@ function renderCredit(){
     const color=uso>80?'var(--red)':uso>50?'var(--orange)':'var(--blue)';
     const tag=status.toLowerCase()==='crítico'?'t-red':status.toLowerCase()==='alerta'?'t-orange':status.toLowerCase()==='normal'?'t-blue':'t-grey';
     const c1=name.startsWith('Bradesco')?'#38bdf8':name.startsWith('Inter')?'#f87171':name.startsWith('Mercado')?'#fb923c':name.startsWith('Riachuelo')?'#f472b6':'#64748b';
-    html+=`<div class="glass cc" style="--cc1:${c1};--cc2:${c1}">
-      <div class="top"><span class="name">${esc(name)}</span><span class="tag ${tag}">${esc(status)}</span></div>
-      <div class="fatura">${fat!==null?fmtBRL(fat):'—'}</div>
-      <div class="venc">Fatura do mês · Venc ${esc(venc||'—')}</div>
-      <div class="prog"><div class="prog-fill" style="width:${Math.min(100,uso)}%;background:${color}"></div></div>
-      <div class="lim"><span>Uso: ${uso.toFixed(1).replace('.',',')}%</span>
-      <span>Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}</span></div>
-      <div style="display:flex;gap:8px;margin-top:12px;position:relative;flex-wrap:wrap">
+    html+=`
+      ${esc(name)}${esc(status)}
+      ${fat!==null?fmtBRL(fat):'—'}
+      Fatura do mês · Venc ${esc(venc||'—')}
+
+
+      Uso: ${uso.toFixed(1).replace('.',',')}%
+      Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}
+
+
         <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado</button>
         <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer</button>
-      </div>
-    </div>`;
+
+
+    `;
   });
   document.getElementById('ccGrid').innerHTML=html;
   let t='<thead><tr><th>Cartão</th><th>Limite Total</th><th>Disponível</th><th>% Disponível</th><th>Status</th></tr></thead><tbody>';
   rows.forEach(r=>{
     const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
     t+=`<tr><td>${esc(cell(r,0))}</td><td>${total!==null?fmtBRL(total):'—'}</td>
-      <td>${disp!==null?fmtBRL(disp):'—'}</td><td>${esc(cell(r,3))}</td>
-      <td><span class="tag ${cell(r,4).toLowerCase()==='crítico'?'t-red':cell(r,4).toLowerCase()==='normal'?'t-blue':'t-grey'}">${esc(cell(r,4))}</span></td></tr>`;
+      <td>${disp!==null?fmtBRL(disp):'—'}</td>
+      <td>${esc(cell(r,3))}</td>
+      <td>${esc(cell(r,4))}</td></tr>`;
   });
   document.getElementById('limTable').innerHTML=t+'</tbody>';
 }
@@ -651,17 +806,18 @@ function renderFaturas(){
       sum+=parseNumSafe(cell(r,1),cell(r,0));
     });
     console.log('[Faturas]',name,'itens:',rows.length,'soma:',sum.toFixed(2));
-    let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
+    let t=`
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
     rows.forEach(r=>{
       t+=`<tr><td>${esc(cell(r,0))}</td><td>${fmtBRL(parseNum(cell(r,1))||0)}</td>
-        <td>${esc(cell(r,2))}</td><td>${esc(cell(r,3))}</td></tr>`;
+        <td>${esc(cell(r,2))}</td>
+        <td>${esc(cell(r,3))}</td></tr>`;
     });
-    t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td><td></td></tr></tbody></table></div>`;
-    t+=`<div style="display:flex;gap:8px;margin:12px 0 20px;flex-wrap:wrap">
+    t+=`<tr class="hl"><td>TOTAL</td><td>${fmtBRL(sum)}</td><td></td><td></td></tr></tbody></table>`;
+    t+=`
       <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado — ${esc(name)}</button>
       <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer pagamento</button>
-    </div>`;
+    `;
     out+=t;
   });
   document.getElementById('faturasContent').innerHTML=out;
@@ -672,22 +828,22 @@ function renderCronograma(){
     const rows=DB[sec.key]||[];
     if(!rows.length) return;
     const head=rows[0];
-    let t=`<div class="glass tbl-wrap" style="margin-bottom:20px">
-      <h3 class="sec-title" style="margin:0 0 10px;color:${sec.color}">${esc(sec.label)}<span class="line"></span></h3>
+    let t=`
+      <h3 class="sec-title" style="margin:0 0 10px;color:${sec.color}">${esc(sec.label)}</h3>
       <table><thead><tr>${head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')}</tr></thead><tbody>`;
     rows.slice(1).forEach(r=>{
       const isSub=/^subtotal/i.test(cell(r,0));
       const cls=isSub?' style="background:rgba(56,189,248,.08);font-weight:700"':'';
       t+='<tr'+cls+'>'+r.map((c,i)=>`<td>${esc(c)}</td>`).join('')+'</tr>';
     });
-    t+='</tbody></table></div>';
+    t+='</tbody></table>';
     out+=t;
   });
   const rows=DB.cronograma||[];
   if(rows.length){
     const head=rows[0];
-    let t=`<div class="glass tbl-wrap">
-      <h3 class="sec-title" style="margin:0 0 10px;color:var(--purple)">Resumo Consolidado<span class="line"></span></h3>
+    let t=`
+      <h3 class="sec-title" style="margin:0 0 10px;color:var(--purple)">Resumo Consolidado</h3>
       <table><thead><tr>${head.map(h=>`<th>${esc(cell([h],0))}</th>`).join('')}</tr></thead><tbody>`;
     rows.slice(1).forEach(r=>{
       const isSub=/^subtotal/i.test(cell(r,0));
@@ -695,7 +851,7 @@ function renderCronograma(){
       const cls=isSub?' style="background:rgba(56,189,248,.08);font-weight:700"':isTotal?' style="background:rgba(167,139,250,.12);font-weight:800"':'';
       t+='<tr'+cls+'>'+r.map((c,i)=>`<td>${esc(c)}</td>`).join('')+'</tr>';
     });
-    t+='</tbody></table></div>';
+    t+='</tbody></table>';
     out+=t;
   }
   document.getElementById('cronContent').innerHTML=out;
@@ -706,11 +862,11 @@ function renderInvest(){
   rows.forEach(r=>{
     const n=parseNum(cell(r,1));
     const total=/total/i.test(cell(r,0));
-    html+=`<div class="glass" style="padding:20px;${total?'border-color:rgba(167,139,250,.45);background:rgba(167,139,250,.06)':''}">
-      <div class="lbl" style="font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700">${esc(cell(r,0))}</div>
-      <div class="val" style="font-size:22px;font-weight:800;margin-top:8px;color:${total?'var(--purple)':'var(--green)'}">${n!==null?fmtBRL(n):esc(cell(r,1))}</div>
-      <div class="sub" style="font-size:11px;color:var(--txt2);margin-top:6px;line-height:1.5">${esc(cell(r,2))}</div>
-    </div>`;
+    html+=`
+      ${esc(cell(r,0))}
+      ${n!==null?fmtBRL(n):esc(cell(r,1))}
+      ${esc(cell(r,2))}
+    `;
   });
   document.getElementById('invGrid').innerHTML=html;
 }
@@ -721,7 +877,7 @@ function renderExtrato(){
     const tipo=cell(r,1), n=parseNum(cell(r,2));
     const isEnt=tipo.toLowerCase().includes('entrada');
     t+=`<tr><td>${esc(cell(r,0))}</td>
-      <td><span class="tag ${isEnt?'t-green':'t-red'}">${esc(tipo)}</span></td>
+      <td>${esc(tipo)}</td>
       <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
       <td>${esc(cell(r,3))}</td></tr>`;
   });
@@ -732,7 +888,7 @@ function renderLancamentos(){
   const el=document.getElementById('lancTable');
   if(!el) return;
   if(!rows.length){
-    el.innerHTML='<p style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum lançamento registrado pelo site.</p>';
+    el.innerHTML='<tbody><tr><td style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum lançamento registrado pelo site.</td></tr></tbody>';
     return;
   }
   let t='<thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Tipo</th><th>Descrição</th><th>Parcela</th><th>Ação</th></tr></thead><tbody>';
@@ -744,13 +900,164 @@ function renderLancamentos(){
     t+=`<tr><td>${esc(cell(r,0))}</td>
       <td>${esc(cell(r,1))}</td>
       <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
-      <td><span class="tag ${isEnt?'t-green':'t-red'}">${esc(cell(r,3))}</span></td>
+      <td>${esc(cell(r,3))}</td>
       <td>${esc(cell(r,4))}</td>
       <td>${esc(parcela)}</td>
       <td><button class="btn" style="padding:5px 12px;font-size:12px;color:var(--red);border-color:rgba(248,113,113,.4)" onclick="cancelarLancamento('${esc(id)}')">Cancelar</button></td></tr>`;
   });
   el.innerHTML=t+'</tbody>';
 }
+
+
+/* ================= REPASSES FUTUROS ================= */
+function ajustarDiaUtilStr(iso){
+  if(!iso) return '';
+  var p = iso.split('-');
+  var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+  if(isNaN(d.getTime())) return iso;
+  var dow = d.getDay();
+  if(dow === 6) d.setDate(d.getDate()-1);
+  else if(dow === 0) d.setDate(d.getDate()-2);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function parseDataBR(s){
+  var t = String(s||'').trim();
+  var m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return new Date(parseInt(m[3],10), parseInt(m[2],10)-1, parseInt(m[1],10));
+  var m2 = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m2) return new Date(parseInt(m2[1],10), parseInt(m2[2],10)-1, parseInt(m2[3],10));
+  var d = new Date(t);
+  return isNaN(d.getTime()) ? null : d;
+}
+function renderRepasses(){
+  var rows = (DB.repassesFuturos||[]).slice(1);
+  var hoje = new Date();
+  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+  var receitas = 0, saidas = 0, pendentes = 0;
+  var rec = [], pont = [];
+  rows.forEach(function(r){
+    var id = cell(r,0);
+    if(!id) return;
+    var status = cell(r,6).toLowerCase();
+    var d = parseDataBR(cell(r,3));
+    var noMes = d && d.getMonth()===mesAtual && d.getFullYear()===anoAtual;
+    var pendente = status.indexOf('conclu') !== 0;
+    if(pendente && noMes){
+      var v = parseNumSafe(cell(r,2), cell(r,1));
+      if(cell(r,4).toLowerCase().indexOf('receita')===0) receitas += v;
+      else saidas += v;
+      pendentes++;
+    }
+    var item = {id:id, desc:cell(r,1), valor:cell(r,2), data:cell(r,3), tipo:cell(r,4), rec:cell(r,5), status:cell(r,6), conta:cell(r,7)};
+    if(cell(r,5).toLowerCase().indexOf('sim')===0) rec.push(item); else pont.push(item);
+  });
+  var saldo = 0;
+  (DB.contas||[]).slice(1).forEach(function(r){
+    if(/^total/i.test(cell(r,0))) return;
+    saldo += parseNumSafe(cell(r,2), cell(r,0));
+  });
+  var projetado = saldo + receitas - saidas;
+  document.getElementById('repKpis').innerHTML =
+    'Receitas Previstas'+fmtBRL(receitas)+'Pendentes do mês corrente'+
+    'Saídas Previstas'+fmtBRL(saidas)+'Pendentes do mês corrente'+
+    'Saldo Projetado'+fmtBRL(projetado)+'Saldo + receitas − saídas'+
+    'Itens no Mês'+pendentes+'Pendentes de conclusão';
+  document.getElementById('repRecTable').innerHTML = montarTabelaRep(rec);
+  document.getElementById('repPontTable').innerHTML = montarTabelaRep(pont);
+}
+function montarTabelaRep(lista){
+  if(!lista.length) return '<tbody><tr><td style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum item nesta seção.</td></tr></tbody>';
+  var t = '<thead><tr><th>Descrição</th><th>Valor</th><th>Data</th><th>Tipo</th><th>Recorrente</th><th>Status</th><th>Conta</th><th>Ações</th></tr></thead><tbody>';
+  lista.forEach(function(it){
+    var isRec = it.tipo.toLowerCase().indexOf('receita')===0;
+    var concluido = it.status.toLowerCase().indexOf('conclu')===0;
+    var tagTipo = isRec ? 't-green' : 't-red';
+    var tagStatus = concluido ? 't-grey' : 't-orange';
+    var n = parseNum(it.valor);
+    t += '<tr>'+
+      '<td>'+esc(it.desc)+'</td>'+
+      '<td style="color:'+(isRec?'var(--green)':'var(--red)')+'">'+(n!==null?fmtBRL(n):esc(it.valor))+'</td>'+
+      '<td>'+esc(it.data)+'</td>'+
+      '<td>'+esc(it.tipo)+'</td>'+
+      '<td>'+esc(it.rec)+'</td>'+
+      '<td>'+esc(it.status)+'</td>'+
+      '<td>'+esc(it.conta)+'</td>'+
+      '<td style="white-space:nowrap">'+
+        (concluido ? '' : '<button class="btn" style="padding:5px 10px;font-size:11px;color:var(--green);border-color:rgba(74,222,128,.4)" onclick="concluirRepasse(\''+esc(it.id)+'\')">✓ Concluído</button> ')+
+        '<button class="btn" style="padding:5px 10px;font-size:11px" onclick="editarRepasse(\''+esc(it.id)+'\')">✎ Editar</button> '+
+        '<button class="btn" style="padding:5px 10px;font-size:11px;color:var(--red);border-color:rgba(248,113,113,.4)" onclick="excluirRepasse(\''+esc(it.id)+'\')">🗑 Excluir</button>'+
+      '</td></tr>';
+  });
+  return t+'</tbody>';
+}
+function addRepasse(){
+  var st = document.getElementById('repStatus');
+  var desc = document.getElementById('repDesc').value.trim();
+  var valor = document.getElementById('repValor').value;
+  var data = document.getElementById('repData').value;
+  if(!desc || !valor || !data){ st.className='err'; st.textContent='Preencha descrição, valor e data.'; return; }
+  var ajustada = ajustarDiaUtilStr(data);
+  if(ajustada !== data){
+    if(!confirm('A data '+data+' cai em fim de semana. Ajustar para '+ajustada+' (último dia útil anterior)?')) return;
+  }
+  st.className=''; st.textContent='Salvando…';
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'addRepasse', descricao:desc, valor:parseFloat(valor.replace(',','.')),
+      data:ajustada, tipo:document.getElementById('repTipo').value,
+      recorrente:document.getElementById('repRec').value, conta:document.getElementById('repConta').value})
+  }).then(function(){
+    st.className='ok'; st.textContent='✅ Repasse adicionado! Atualizando…';
+    document.getElementById('repDesc').value=''; document.getElementById('repValor').value='';
+    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
+  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao adicionar.'; });
+}
+function editarRepasse(id){
+  var rows = (DB.repassesFuturos||[]).slice(1);
+  var it = null;
+  rows.forEach(function(r){ if(cell(r,0)===id) it = {desc:cell(r,1),valor:cell(r,2),data:cell(r,3),tipo:cell(r,4),rec:cell(r,5),conta:cell(r,7)}; });
+  if(!it){ alert('Repasse não encontrado.'); return; }
+  var novaDesc = prompt('Descrição:', it.desc); if(novaDesc===null) return;
+  var novoValor = prompt('Valor (R$):', String(it.valor).replace('.',',')); if(novoValor===null) return;
+  var novaData = prompt('Data (dd/mm/aaaa):', it.data); if(novaData===null) return;
+  var novoTipo = prompt('Tipo (Receita ou Saída):', it.tipo); if(novoTipo===null) return;
+  var novaRec = prompt('Recorrente (Sim ou Não):', it.rec); if(novaRec===null) return;
+  var novaConta = prompt('Conta:', it.conta); if(novaConta===null) return;
+  var st = document.getElementById('repStatus');
+  st.className=''; st.textContent='Salvando…';
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'editarRepasse', id:id, descricao:novaDesc,
+      valor:parseFloat(String(novoValor).replace(',','.')), data:novaData,
+      tipo:novoTipo, recorrente:novaRec, conta:novaConta})
+  }).then(function(){
+    st.className='ok'; st.textContent='✅ Repasse atualizado! Atualizando…';
+    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
+  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao editar.'; });
+}
+function excluirRepasse(id){
+  if(!confirm('Excluir este repasse permanentemente? Se for recorrente, ele deixará de se repetir e não impactará mais a liquidez.')) return;
+  var st = document.getElementById('repStatus');
+  st.className=''; st.textContent='Excluindo…';
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'excluirRepasse', id:id})
+  }).then(function(){
+    st.className='ok'; st.textContent='✅ Repasse excluído! Atualizando…';
+    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
+  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao excluir.'; });
+}
+function concluirRepasse(id){
+  var conta = prompt('De qual conta o dinheiro entrou/saiu?\n(Bradesco, Inter, Mercado Pago, Nubank, Midway)','Bradesco');
+  if(!conta) return;
+  var st = document.getElementById('repStatus');
+  st.className=''; st.textContent='Concluindo…';
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'concluirRepasse', id:id, conta:conta})
+  }).then(function(){
+    st.className='ok'; st.textContent='✅ Repasse concluído e saldo atualizado!';
+    setTimeout(function(){ loadAll(); st.textContent=''; },3500);
+  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao concluir.'; });
+}
+
+
 /* ================= PARCELAMENTO / CONTA ================= */
 function toggleParcelamento(){
   var sim = document.getElementById('parcelado').value === 'sim';
@@ -760,8 +1067,10 @@ function toggleConta(){
   var pix = document.getElementById('categoria').value === 'PIX';
   document.getElementById('contaField').style.display = pix ? 'block' : 'none';
 }
+
+
 /* ================= NOVO LANÇAMENTO ================= */
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbw8bG8llVtma5fCkF7-xYRkMckaAUSMuUKuCm32JQeBP3mia6wPgjatWwQda9HUO6Yq_Q/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxeebWVZZHr1WJvlutFXoK--r-RlGQB-GX0fA1XSS95CESPk_gMRbaCOruZbVtFeozz4A/exec';
 document.getElementById('formLancamento').addEventListener('submit', function(e){
   e.preventDefault();
   var statusEl = document.getElementById('status');
@@ -801,6 +1110,8 @@ document.getElementById('formLancamento').addEventListener('submit', function(e)
     btn.disabled = false; btn.textContent = 'Salvar lançamento';
   });
 });
+
+
 /* ================= TRANSFERIR ENTRE CONTAS ================= */
 function transferirContas(){
   var origem = document.getElementById('transOrigem').value;
@@ -833,6 +1144,8 @@ function transferirContas(){
     transStatus.className='err'; transStatus.textContent='❌ Erro ao transferir. Tente novamente.';
   });
 }
+
+
 /* ================= CANCELAR LANÇAMENTO ================= */
 function cancelarLancamento(id){
   if(!id){ alert('Lançamento sem identificador.'); return; }
@@ -854,6 +1167,8 @@ function cancelarLancamento(id){
     statusEl.className='err'; statusEl.textContent='❌ Erro ao cancelar. Tente novamente.';
   });
 }
+
+
 /* ================= PAGAMENTO EFETUADO / DESFAZER ================= */
 function pagarCartao(key, nome){
   nome = nome || key;
@@ -881,6 +1196,8 @@ function desfazerPagamento(key, nome){
     alert('Erro ao desfazer pagamento. Tente novamente.');
   });
 }
+
+
 /* ================= CONFIRMAR REPASSE ================= */
 function confirmarRepasse(tipo){
   var nomes = {beli:'PIX para Beli', reserva:'repasse de reserva'};
@@ -898,6 +1215,8 @@ function confirmarRepasse(tipo){
     alert('Erro ao confirmar repasse. Tente novamente.');
   });
 }
+
+
 /* ================= MOVIMENTAR INVESTIMENTOS ================= */
 function movimentarInvestimento(){
   var invStatus = document.getElementById('invStatus');
@@ -927,6 +1246,8 @@ function movimentarInvestimento(){
     btn.disabled = false;
   });
 }
+
+
 /* ================= ANTECIPAÇÃO DE PARCELAS ================= */
 function calcularRestanteParcelas(key){
   const rows = DB[CRON_KEY_MAP[key]] || [];
@@ -976,6 +1297,8 @@ function anteciparParcelas(){
     antStatus.className='err'; antStatus.textContent='❌ Erro ao antecipar. Tente novamente.';
   });
 }
+
+
 /* ================= NAV ================= */
 function go(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -983,6 +1306,8 @@ function go(view){
   if(el) el.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+
 /* ================= INIT ================= */
 document.getElementById('data').value = new Date().toISOString().split('T')[0];
 document.getElementById('transData').value = new Date().toISOString().split('T')[0];
@@ -990,3 +1315,6 @@ loadAll();
 </script>
 </body>
 </html>
+
+
+
