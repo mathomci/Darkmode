@@ -653,6 +653,10 @@ function parseNumSafe(v,label){
 }
 function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function setMeta(txt){
+  var el = document.getElementById('meta');
+  if(el) el.textContent = txt;
+}
 
 
 /* ================= LOAD ================= */
@@ -663,7 +667,7 @@ async function loadSheet(key){
   DB[key]=parseCSV(await res.text());
 }
 async function loadAll(){
-  document.getElementById('meta').textContent='Atualizando…';
+  setMeta('Atualizando…');
   const keys = Object.keys(GIDS);
   const results = await Promise.allSettled(keys.map(loadSheet));
   const falhas = [];
@@ -674,11 +678,11 @@ async function loadAll(){
       console.warn('[loadAll] falhou:', keys[i], r.reason);
     }
   });
-  renderAll();
+  try { renderAll(); } catch(e){ console.error('[renderAll] erro:', e); }
   if(falhas.length){
-    document.getElementById('meta').textContent='Parcial · falhou: '+falhas.join(', ');
+    setMeta('Parcial · falhou: '+falhas.join(', '));
   } else {
-    document.getElementById('meta').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+    setMeta('Atualizado: '+new Date().toLocaleString('pt-BR'));
   }
 }
 
@@ -700,7 +704,8 @@ function renderChips(){
       ${n!==null?fmtBRL(n):esc(val)}
       ${esc(cell(r,2))}`;
   });
-  document.getElementById('chips').innerHTML=html;
+  const el=document.getElementById('chips');
+  if(el) el.innerHTML=html;
 }
 function renderOverview(){
   const rows=(DB.resumo||[]).slice(1);
@@ -711,14 +716,16 @@ function renderOverview(){
       ${n!==null?fmtBRL(n):esc(cell(r,1))}
       ${esc(cell(r,2))}`;
   });
-  document.getElementById('kpiGrid').innerHTML=grid;
+  const kg=document.getElementById('kpiGrid');
+  if(kg) kg.innerHTML=grid;
   const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
   const comp=rows.find(r=>/Comprometimento/i.test(cell(r,0)));
   const saldo=rows.find(r=>/Saldo em Contas/i.test(cell(r,0)));
   const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), saldoN=parseNum(saldo?cell(saldo,1):'');
   const pct=compN!==null?Math.min(100,compN):0;
   const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
-  document.getElementById('liqCard').innerHTML=`
+  const lc=document.getElementById('liqCard');
+  if(lc) lc.innerHTML=`
     <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento</h3>
 
 
@@ -741,7 +748,8 @@ function renderContas(){
       <td>${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
       <td>${esc(cell(r,3))}</td></tr>`;
   });
-  document.getElementById('contasTable').innerHTML=t+'</tbody>';
+  const el=document.getElementById('contasTable');
+  if(el) el.innerHTML=t+'</tbody>';
 }
 function renderChart(){
   const rows=(DB.mensal||[]).slice(1);
@@ -790,7 +798,8 @@ function renderCredit(){
 
     `;
   });
-  document.getElementById('ccGrid').innerHTML=html;
+  const cg=document.getElementById('ccGrid');
+  if(cg) cg.innerHTML=html;
   let t='<thead><tr><th>Cartão</th><th>Limite Total</th><th>Disponível</th><th>% Disponível</th><th>Status</th></tr></thead><tbody>';
   rows.forEach(r=>{
     const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
@@ -799,7 +808,8 @@ function renderCredit(){
       <td>${esc(cell(r,3))}</td>
       <td>${esc(cell(r,4))}</td></tr>`;
   });
-  document.getElementById('limTable').innerHTML=t+'</tbody>';
+  const lt=document.getElementById('limTable');
+  if(lt) lt.innerHTML=t+'</tbody>';
 }
 function renderFaturas(){
   const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b'],['Riachuelo','riachuelo','#f472b6']];
@@ -813,7 +823,6 @@ function renderFaturas(){
     rows.forEach(r=>{
       sum+=parseNumSafe(cell(r,1),cell(r,0));
     });
-    console.log('[Faturas]',name,'itens:',rows.length,'soma:',sum.toFixed(2));
     let t=`
       <table><thead><tr><th style="color:${color}">${esc(name)} — Fatura ${esc(venc||'')}</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>`;
     rows.forEach(r=>{
@@ -828,7 +837,8 @@ function renderFaturas(){
     `;
     out+=t;
   });
-  document.getElementById('faturasContent').innerHTML=out;
+  const el=document.getElementById('faturasContent');
+  if(el) el.innerHTML=out;
 }
 function renderCronograma(){
   let out='';
@@ -862,7 +872,8 @@ function renderCronograma(){
     t+='</tbody></table>';
     out+=t;
   }
-  document.getElementById('cronContent').innerHTML=out;
+  const el=document.getElementById('cronContent');
+  if(el) el.innerHTML=out;
 }
 function renderInvest(){
   const rows=(DB.investimentos||[]).slice(1);
@@ -876,7 +887,8 @@ function renderInvest(){
       ${esc(cell(r,2))}
     `;
   });
-  document.getElementById('invGrid').innerHTML=html;
+  const el=document.getElementById('invGrid');
+  if(el) el.innerHTML=html;
 }
 function renderExtrato(){
   const rows=(DB.extrato||[]).slice(1);
@@ -889,7 +901,8 @@ function renderExtrato(){
       <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
       <td>${esc(cell(r,3))}</td></tr>`;
   });
-  document.getElementById('extTable').innerHTML=t+'</tbody>';
+  const el=document.getElementById('extTable');
+  if(el) el.innerHTML=t+'</tbody>';
 }
 function renderLancamentos(){
   const rows=(DB.lancamentos||[]).slice(1);
@@ -965,13 +978,16 @@ function renderRepasses(){
     saldo += parseNumSafe(cell(r,2), cell(r,0));
   });
   var projetado = saldo + receitas - saidas;
-  document.getElementById('repKpis').innerHTML =
+  var kp = document.getElementById('repKpis');
+  if(kp) kp.innerHTML =
     'Receitas Previstas'+fmtBRL(receitas)+'Pendentes do mês corrente'+
     'Saídas Previstas'+fmtBRL(saidas)+'Pendentes do mês corrente'+
     'Saldo Projetado'+fmtBRL(projetado)+'Saldo + receitas − saídas'+
     'Itens no Mês'+pendentes+'Pendentes de conclusão';
-  document.getElementById('repRecTable').innerHTML = montarTabelaRep(rec);
-  document.getElementById('repPontTable').innerHTML = montarTabelaRep(pont);
+  var rt = document.getElementById('repRecTable');
+  if(rt) rt.innerHTML = montarTabelaRep(rec);
+  var pt = document.getElementById('repPontTable');
+  if(pt) pt.innerHTML = montarTabelaRep(pont);
 }
 function montarTabelaRep(lista){
   if(!lista.length) return '<tbody><tr><td style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum item nesta seção.</td></tr></tbody>';
@@ -1003,21 +1019,21 @@ function addRepasse(){
   var desc = document.getElementById('repDesc').value.trim();
   var valor = document.getElementById('repValor').value;
   var data = document.getElementById('repData').value;
-  if(!desc || !valor || !data){ st.className='err'; st.textContent='Preencha descrição, valor e data.'; return; }
+  if(!desc || !valor || !data){ if(st){st.className='err'; st.textContent='Preencha descrição, valor e data.';} return; }
   var ajustada = ajustarDiaUtilStr(data);
   if(ajustada !== data){
     if(!confirm('A data '+data+' cai em fim de semana. Ajustar para '+ajustada+' (último dia útil anterior)?')) return;
   }
-  st.className=''; st.textContent='Salvando…';
+  if(st){st.className=''; st.textContent='Salvando…';}
   fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'addRepasse', descricao:desc, valor:parseFloat(valor.replace(',','.')),
       data:ajustada, tipo:document.getElementById('repTipo').value,
       recorrente:document.getElementById('repRec').value, conta:document.getElementById('repConta').value})
   }).then(function(){
-    st.className='ok'; st.textContent='✅ Repasse adicionado! Atualizando…';
+    if(st){st.className='ok'; st.textContent='✅ Repasse adicionado! Atualizando…';}
     document.getElementById('repDesc').value=''; document.getElementById('repValor').value='';
-    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
-  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao adicionar.'; });
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao adicionar.';} });
 }
 function editarRepasse(id){
   var rows = (DB.repassesFuturos||[]).slice(1);
@@ -1031,38 +1047,38 @@ function editarRepasse(id){
   var novaRec = prompt('Recorrente (Sim ou Não):', it.rec); if(novaRec===null) return;
   var novaConta = prompt('Conta:', it.conta); if(novaConta===null) return;
   var st = document.getElementById('repStatus');
-  st.className=''; st.textContent='Salvando…';
+  if(st){st.className=''; st.textContent='Salvando…';}
   fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'editarRepasse', id:id, descricao:novaDesc,
       valor:parseFloat(String(novoValor).replace(',','.')), data:novaData,
       tipo:novoTipo, recorrente:novaRec, conta:novaConta})
   }).then(function(){
-    st.className='ok'; st.textContent='✅ Repasse atualizado! Atualizando…';
-    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
-  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao editar.'; });
+    if(st){st.className='ok'; st.textContent='✅ Repasse atualizado! Atualizando…';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao editar.';} });
 }
 function excluirRepasse(id){
   if(!confirm('Excluir este repasse permanentemente? Se for recorrente, ele deixará de se repetir e não impactará mais a liquidez.')) return;
   var st = document.getElementById('repStatus');
-  st.className=''; st.textContent='Excluindo…';
+  if(st){st.className=''; st.textContent='Excluindo…';}
   fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'excluirRepasse', id:id})
   }).then(function(){
-    st.className='ok'; st.textContent='✅ Repasse excluído! Atualizando…';
-    setTimeout(function(){ loadAll(); st.textContent=''; },3000);
-  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao excluir.'; });
+    if(st){st.className='ok'; st.textContent='✅ Repasse excluído! Atualizando…';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao excluir.';} });
 }
 function concluirRepasse(id){
   var conta = prompt('De qual conta o dinheiro entrou/saiu?\n(Bradesco, Inter, Mercado Pago, Nubank, Midway)','Bradesco');
   if(!conta) return;
   var st = document.getElementById('repStatus');
-  st.className=''; st.textContent='Concluindo…';
+  if(st){st.className=''; st.textContent='Concluindo…';}
   fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:'concluirRepasse', id:id, conta:conta})
   }).then(function(){
-    st.className='ok'; st.textContent='✅ Repasse concluído e saldo atualizado!';
-    setTimeout(function(){ loadAll(); st.textContent=''; },3500);
-  }).catch(function(){ st.className='err'; st.textContent='❌ Erro ao concluir.'; });
+    if(st){st.className='ok'; st.textContent='✅ Repasse concluído e saldo atualizado!';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3500);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao concluir.';} });
 }
 
 
@@ -1079,45 +1095,70 @@ function toggleConta(){
 
 /* ================= NOVO LANÇAMENTO ================= */
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxeebWVZZHr1WJvlutFXoK--r-RlGQB-GX0fA1XSS95CESPk_gMRbaCOruZbVtFeozz4A/exec';
-document.getElementById('formLancamento').addEventListener('submit', function(e){
-  e.preventDefault();
-  var statusEl = document.getElementById('status');
-  var btn = document.getElementById('btnSalvar');
-  statusEl.className=''; statusEl.textContent='Salvando…';
-  btn.disabled = true; btn.textContent = 'Enviando…';
-  var categoria = document.getElementById('categoria').value;
-  if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
-  var dados = {
-    data: document.getElementById('data').value,
-    categoria: categoria,
-    valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
-    tipo: document.getElementById('tipo').value,
-    descricao: document.getElementById('descricao').value,
-    parcelado: document.getElementById('parcelado').value,
-    parcelas: document.getElementById('parcelas').value,
-    parcelaAtual: document.getElementById('parcelaAtual').value
-  };
-  fetch(URL_SCRIPT, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify(dados)
-  }).then(function(){
-    statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';
-    document.getElementById('formLancamento').reset();
-    document.getElementById('parcelaFields').style.display='none';
-    document.getElementById('contaField').style.display='none';
-    document.getElementById('data').value = new Date().toISOString().split('T')[0];
-    setTimeout(function(){
-      if (typeof loadAll === 'function') { loadAll(); }
-      else { location.reload(); }
-      btn.disabled = false; btn.textContent = 'Salvar lançamento';
-      statusEl.textContent = '';
-    }, 3000);
-  }).catch(function(){
-    statusEl.className='err'; statusEl.textContent='❌ Erro ao salvar. Tente novamente.';
-    btn.disabled = false; btn.textContent = 'Salvar lançamento';
-  });
-});
+
+
+function initApp(){
+  var dEl = document.getElementById('data');
+  if(dEl) dEl.value = new Date().toISOString().split('T')[0];
+  var tEl = document.getElementById('transData');
+  if(tEl) tEl.value = new Date().toISOString().split('T')[0];
+
+
+  var form = document.getElementById('formLancamento');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var statusEl = document.getElementById('status');
+      var btn = document.getElementById('btnSalvar');
+      if(statusEl){statusEl.className=''; statusEl.textContent='Salvando…';}
+      if(btn){btn.disabled = true; btn.textContent = 'Enviando…';}
+      var categoria = document.getElementById('categoria').value;
+      if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
+      var dados = {
+        data: document.getElementById('data').value,
+        categoria: categoria,
+        valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
+        tipo: document.getElementById('tipo').value,
+        descricao: document.getElementById('descricao').value,
+        parcelado: document.getElementById('parcelado').value,
+        parcelas: document.getElementById('parcelas').value,
+        parcelaAtual: document.getElementById('parcelaAtual').value
+      };
+      fetch(URL_SCRIPT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(dados)
+      }).then(function(){
+        if(statusEl){statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';}
+        form.reset();
+        var pf = document.getElementById('parcelaFields');
+        if(pf) pf.style.display='none';
+        var cf = document.getElementById('contaField');
+        if(cf) cf.style.display='none';
+        var d2 = document.getElementById('data');
+        if(d2) d2.value = new Date().toISOString().split('T')[0];
+        setTimeout(function(){
+          loadAll();
+          if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+          if(statusEl) statusEl.textContent = '';
+        }, 3000);
+      }).catch(function(){
+        if(statusEl){statusEl.className='err'; statusEl.textContent='❌ Erro ao salvar. Tente novamente.';}
+        if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+      });
+    });
+  }
+
+
+  loadAll();
+}
+
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 
 /* ================= TRANSFERIR ENTRE CONTAS ================= */
@@ -1144,8 +1185,7 @@ function transferirContas(){
     transStatus.className='ok'; transStatus.textContent='✅ Transferência registrada! Atualizando…';
     document.getElementById('transValor').value='';
     setTimeout(function(){
-      if (typeof loadAll === 'function') loadAll();
-      else location.reload();
+      loadAll();
       transStatus.textContent='';
     }, 3000);
   }).catch(function(){
@@ -1167,8 +1207,7 @@ function cancelarLancamento(id){
   }).then(function(){
     statusEl.className='ok'; statusEl.textContent='✅ Lançamento cancelado! Atualizando…';
     setTimeout(function(){
-      if (typeof loadAll === 'function') { loadAll(); }
-      else { location.reload(); }
+      loadAll();
       statusEl.textContent='';
     }, 3000);
   }).catch(function(){
@@ -1245,8 +1284,7 @@ function movimentarInvestimento(){
     invStatus.className='ok'; invStatus.textContent='✅ Movimentação registrada! Atualizando…';
     document.getElementById('invValor').value='';
     setTimeout(function(){
-      if (typeof loadAll === 'function') loadAll();
-      else location.reload();
+      loadAll();
       btn.disabled = false; invStatus.textContent='';
     }, 3000);
   }).catch(function(){
@@ -1279,9 +1317,12 @@ function calcularRestanteParcelas(key){
   return total;
 }
 function atualizarPrevisaoAntecipacao(){
-  const key = document.getElementById('antCartao').value;
+  const el = document.getElementById('antCartao');
+  if(!el) return;
+  const key = el.value;
   const total = calcularRestanteParcelas(key);
-  document.getElementById('antTotal').textContent = total>0 ? fmtBRL(total) : 'R$ 0,00';
+  const out = document.getElementById('antTotal');
+  if(out) out.textContent = total>0 ? fmtBRL(total) : 'R$ 0,00';
 }
 function anteciparParcelas(){
   const key = document.getElementById('antCartao').value;
@@ -1297,8 +1338,7 @@ function anteciparParcelas(){
   }).then(function(){
     antStatus.className='ok'; antStatus.textContent='✅ Parcelas antecipadas! Atualizando…';
     setTimeout(function(){
-      if (typeof loadAll === 'function') loadAll();
-      else location.reload();
+      loadAll();
       antStatus.textContent='';
     }, 3500);
   }).catch(function(){
@@ -1314,12 +1354,6 @@ function go(view){
   if(el) el.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
-
-
-/* ================= INIT ================= */
-document.getElementById('data').value = new Date().toISOString().split('T')[0];
-document.getElementById('transData').value = new Date().toISOString().split('T')[0];
-loadAll();
 </script>
 </body>
 </html>
