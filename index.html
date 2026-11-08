@@ -661,12 +661,15 @@ function setMeta(txt){
 
 /* ================= LOAD ================= */
 async function loadSheet(key){
-  const url=`${SHEET_BASE}?gid=${GIDS[key]}&single=true&output=csv`;
-  const res=await fetch(url);
-  if(!res.ok) throw new Error(key+' falhou');
-  DB[key]=parseCSV(await res.text());
+  const url = SHEET_BASE + '?gid=' + GIDS[key] + '&single=true&output=csv';
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(key + ' HTTP ' + res.status);
+  const txt = await res.text();
+  DB[key] = parseCSV(txt);
+  console.log('[loadSheet] OK', key, 'linhas:', DB[key].length);
 }
 async function loadAll(){
+  console.log('[loadAll] iniciando carregamento de', Object.keys(GIDS).length, 'abas');
   setMeta('Atualizando…');
   const keys = Object.keys(GIDS);
   const results = await Promise.allSettled(keys.map(loadSheet));
@@ -675,14 +678,16 @@ async function loadAll(){
     if(r.status==='rejected'){
       falhas.push(keys[i]);
       DB[keys[i]] = DB[keys[i]] || [];
-      console.warn('[loadAll] falhou:', keys[i], r.reason);
+      console.warn('[loadAll] FALHOU:', keys[i], r.reason && r.reason.message ? r.reason.message : r.reason);
     }
   });
   try { renderAll(); } catch(e){ console.error('[renderAll] erro:', e); }
   if(falhas.length){
-    setMeta('Parcial · falhou: '+falhas.join(', '));
+    setMeta('Parcial · falhou: ' + falhas.join(', '));
+    console.warn('[loadAll] concluído com falhas:', falhas.join(', '));
   } else {
-    setMeta('Atualizado: '+new Date().toLocaleString('pt-BR'));
+    setMeta('Atualizado: ' + new Date().toLocaleString('pt-BR'));
+    console.log('[loadAll] concluído com sucesso');
   }
 }
 
@@ -759,6 +764,7 @@ function renderChart(){
   if(!ctx) return;
   if(chart) chart.destroy();
   if(typeof Chart==='undefined'){ctx.parentElement.innerHTML='<p style="color:var(--txt2);font-size:13px">Gráfico indisponível (Chart.js não carregou).</p>';return;}
+  if(!labels.length){ctx.parentElement.innerHTML='<p style="color:var(--txt2);font-size:13px">Sem dados de projeção mensal.</p>';return;}
   chart=new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[{label:'Total Gasto',data,backgroundColor:['#38bdf8','#a78bfa','#4ade80','#4ade80','#fb923c','#fb923c','#f87171','#94a3b8'],borderRadius:8,barPercentage:.7}]},
@@ -1097,70 +1103,6 @@ function toggleConta(){
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxeebWVZZHr1WJvlutFXoK--r-RlGQB-GX0fA1XSS95CESPk_gMRbaCOruZbVtFeozz4A/exec';
 
 
-function initApp(){
-  var dEl = document.getElementById('data');
-  if(dEl) dEl.value = new Date().toISOString().split('T')[0];
-  var tEl = document.getElementById('transData');
-  if(tEl) tEl.value = new Date().toISOString().split('T')[0];
-
-
-  var form = document.getElementById('formLancamento');
-  if(form){
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var statusEl = document.getElementById('status');
-      var btn = document.getElementById('btnSalvar');
-      if(statusEl){statusEl.className=''; statusEl.textContent='Salvando…';}
-      if(btn){btn.disabled = true; btn.textContent = 'Enviando…';}
-      var categoria = document.getElementById('categoria').value;
-      if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
-      var dados = {
-        data: document.getElementById('data').value,
-        categoria: categoria,
-        valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
-        tipo: document.getElementById('tipo').value,
-        descricao: document.getElementById('descricao').value,
-        parcelado: document.getElementById('parcelado').value,
-        parcelas: document.getElementById('parcelas').value,
-        parcelaAtual: document.getElementById('parcelaAtual').value
-      };
-      fetch(URL_SCRIPT, {
-        method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify(dados)
-      }).then(function(){
-        if(statusEl){statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';}
-        form.reset();
-        var pf = document.getElementById('parcelaFields');
-        if(pf) pf.style.display='none';
-        var cf = document.getElementById('contaField');
-        if(cf) cf.style.display='none';
-        var d2 = document.getElementById('data');
-        if(d2) d2.value = new Date().toISOString().split('T')[0];
-        setTimeout(function(){
-          loadAll();
-          if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
-          if(statusEl) statusEl.textContent = '';
-        }, 3000);
-      }).catch(function(){
-        if(statusEl){statusEl.className='err'; statusEl.textContent='❌ Erro ao salvar. Tente novamente.';}
-        if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
-      });
-    });
-  }
-
-
-  loadAll();
-}
-
-
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', initApp);
-} else {
-  initApp();
-}
-
-
 /* ================= TRANSFERIR ENTRE CONTAS ================= */
 function transferirContas(){
   var origem = document.getElementById('transOrigem').value;
@@ -1353,6 +1295,72 @@ function go(view){
   const el=document.getElementById('view-'+view);
   if(el) el.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+/* ================= INIT ================= */
+function initApp(){
+  console.log('[initApp] iniciando dashboard');
+  var dEl = document.getElementById('data');
+  if(dEl) dEl.value = new Date().toISOString().split('T')[0];
+  var tEl = document.getElementById('transData');
+  if(tEl) tEl.value = new Date().toISOString().split('T')[0];
+
+
+  var form = document.getElementById('formLancamento');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var statusEl = document.getElementById('status');
+      var btn = document.getElementById('btnSalvar');
+      if(statusEl){statusEl.className=''; statusEl.textContent='Salvando…';}
+      if(btn){btn.disabled = true; btn.textContent = 'Enviando…';}
+      var categoria = document.getElementById('categoria').value;
+      if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
+      var dados = {
+        data: document.getElementById('data').value,
+        categoria: categoria,
+        valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
+        tipo: document.getElementById('tipo').value,
+        descricao: document.getElementById('descricao').value,
+        parcelado: document.getElementById('parcelado').value,
+        parcelas: document.getElementById('parcelas').value,
+        parcelaAtual: document.getElementById('parcelaAtual').value
+      };
+      fetch(URL_SCRIPT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(dados)
+      }).then(function(){
+        if(statusEl){statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';}
+        form.reset();
+        var pf = document.getElementById('parcelaFields');
+        if(pf) pf.style.display='none';
+        var cf = document.getElementById('contaField');
+        if(cf) cf.style.display='none';
+        var d2 = document.getElementById('data');
+        if(d2) d2.value = new Date().toISOString().split('T')[0];
+        setTimeout(function(){
+          loadAll();
+          if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+          if(statusEl) statusEl.textContent = '';
+        }, 3000);
+      }).catch(function(){
+        if(statusEl){statusEl.className='err'; statusEl.textContent='❌ Erro ao salvar. Tente novamente.';}
+        if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+      });
+    });
+  }
+
+
+  loadAll();
+}
+
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
 }
 </script>
 </body>
