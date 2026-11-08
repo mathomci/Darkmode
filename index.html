@@ -1,788 +1,1513 @@
-<\!DOCTYPE html>  
-<html lang="pt\-BR">  
-<head>  
-<meta charset="UTF\-8">  
-<meta name="viewport" content="width=device\-width, initial\-scale=1\.0">  
-<title>Controle Orçamentário — Matheus Homci</title>  
-<link rel="preconnect" href="https://fonts\.googleapis\.com">  
-<link href="https://fonts\.googleapis\.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">  
-<script src="https://cdn\.jsdelivr\.net/npm/chart\.js@4\.4\.1/dist/chart\.umd\.min\.js"></script>  
-<style>  
-:root\{\-\-bg:\#0a0e1a;\-\-card:rgba\(255,255,255,\.055\);\-\-border:rgba\(255,255,255,\.1\);\-\-txt:\#fff;\-\-txt2:\#94a3b8;\-\-blue:\#38bdf8;\-\-green:\#4ade80;\-\-red:\#f87171;\-\-purple:\#a78bfa;\-\-orange:\#fb923c;\-\-teal:\#2dd4bf;\-\-pink:\#f472b6\}  
-\*\{margin:0;padding:0;box\-sizing:border\-box\}  
-body\{font\-family:'Inter',sans\-serif;background:var\(\-\-bg\);color:var\(\-\-txt\);min\-height:100vh;position:relative\}  
-body::before\{content:'';position:fixed;inset:0;z\-index:0;pointer\-events:none;background:  
- radial\-gradient\(600px 400px at 15% 10%,rgba\(56,189,248,\.08\),transparent 70%\),  
- radial\-gradient\(600px 400px at 85% 25%,rgba\(167,139,250,\.08\),transparent 70%\),  
- radial\-gradient\(700px 500px at 50% 90%,rgba\(45,212,191,\.07\),transparent 70%\)\}  
-\.wrap\{max\-width:1180px;margin:auto;padding:24px 20px 60px;position:relative;z\-index:1\}  
-header\{text\-align:center;margin\-bottom:26px\}  
-header h1\{font\-size:28px;font\-weight:800;background:linear\-gradient\(90deg,var\(\-\-blue\),var\(\-\-purple\)\);\-webkit\-background\-clip:text;background\-clip:text;\-webkit\-text\-fill\-color:transparent\}  
-header p\.sub\{color:var\(\-\-txt2\);font\-size:13px;margin\-top:6px\}  
-\.badge\{display:inline\-block;margin\-top:10px;padding:4px 14px;border:1px solid rgba\(56,189,248,\.4\);border\-radius:999px;font\-size:11px;color:var\(\-\-blue\);font\-weight:600;letter\-spacing:\.05em\}  
-\.toolbar\{margin\-top:14px;display:flex;gap:12px;align\-items:center;justify\-content:center;flex\-wrap:wrap\}  
-\.btn\{background:linear\-gradient\(90deg,rgba\(56,189,248,\.2\),rgba\(167,139,250,\.2\)\);border:1px solid var\(\-\-border\);color:var\(\-\-txt\);padding:9px 18px;border\-radius:12px;cursor:pointer;font\-family:inherit;font\-size:13px;font\-weight:600;transition:\.2s\}  
-\.btn:hover\{border\-color:rgba\(56,189,248,\.6\);background:rgba\(56,189,248,\.12\)\}  
-\.meta\{font\-size:11px;color:var\(\-\-txt2\)\}  
-\.glass\{background:var\(\-\-card\);border:1px solid var\(\-\-border\);border\-radius:18px;backdrop\-filter:blur\(14px\);\-webkit\-backdrop\-filter:blur\(14px\);box\-shadow:0 8px 30px rgba\(0,0,0,\.35\)\}  
-\.view\{display:none\}  
-\.view\.active\{display:block;animation:fade \.3s ease\}  
-@keyframes fade\{from\{opacity:0;transform:translateY\(6px\)\}to\{opacity:1;transform:none\}\}  
-\.breadcrumb\{display:flex;align\-items:center;gap:8px;margin\-bottom:18px;font\-size:13px;color:var\(\-\-txt2\)\}  
-\.breadcrumb button\{background:none;border:none;color:var\(\-\-blue\);font\-weight:600;cursor:pointer;padding:4px 8px;border\-radius:8px;font\-family:inherit;font\-size:13px\}  
-\.breadcrumb button:hover\{background:rgba\(56,189,248,\.1\)\}  
-\.nav\-grid\{display:grid;grid\-template\-columns:repeat\(auto\-fit,minmax\(250px,1fr\)\);gap:16px\}  
-\.nav\-card\{position:relative;padding:22px;cursor:pointer;transition:\.25s\}  
-\.nav\-card:hover\{transform:translateY\(\-4px\);border\-color:rgba\(56,189,248,\.5\);box\-shadow:0 12px 34px rgba\(0,0,0,\.45\),0 0 0 1px rgba\(56,189,248,\.25\)\}  
-\.nav\-arrow\{position:absolute;top:16px;right:18px;color:var\(\-\-txt2\);font\-size:16px\}  
-\.nav\-icon\{width:52px;height:52px;border\-radius:16px;display:flex;align\-items:center;justify\-content:center;font\-size:24px;margin\-bottom:14px\}  
-\.nav\-card h3\{font\-size:15px;font\-weight:700;margin\-bottom:6px\}  
-\.nav\-card p\{font\-size:12px;color:var\(\-\-txt2\);line\-height:1\.5\}  
-footer\{margin\-top:26px;text\-align:center;font\-size:11px;color:var\(\-\-txt2\)\}  
-\.chip\-grid\{display:grid;grid\-template\-columns:repeat\(auto\-fit,minmax\(210px,1fr\)\);gap:14px;margin\-bottom:22px\}  
-\.chip\{padding:18px\}  
-\.kpi\-grid\{display:grid;grid\-template\-columns:repeat\(auto\-fit,minmax\(210px,1fr\)\);gap:14px;margin\-bottom:20px\}  
-\.kpi\{padding:20px\}  
-\.kpi \.lbl\{font\-size:10px;text\-transform:uppercase;letter\-spacing:\.07em;color:var\(\-\-txt2\);font\-weight:700\}  
-\.kpi \.val\{font\-size:24px;font\-weight:800;margin\-top:8px\}  
-\.kpi \.sub\{font\-size:11px;color:var\(\-\-txt2\);margin\-top:6px\}  
-\.tbl\-wrap\{padding:6px 4px;overflow\-x:auto;margin\-bottom:20px\}  
-table\{width:100%;border\-collapse:collapse\}  
-th\{padding:12px 14px;background:rgba\(255,255,255,\.05\);color:var\(\-\-txt2\);font\-size:10px;text\-transform:uppercase;letter\-spacing:\.07em;border\-bottom:1px solid var\(\-\-border\);font\-weight:700;text\-align:left;white\-space:nowrap\}  
-td\{padding:11px 14px;border\-bottom:1px solid rgba\(255,255,255,\.06\);font\-size:13px;white\-space:nowrap\}  
-tr\.hl\{background:rgba\(167,139,250,\.08\);font\-weight:700\}  
-tr\.sub\{background:rgba\(56,189,248,\.06\);font\-weight:700\}  
-\.tag\{display:inline\-block;padding:3px 9px;border\-radius:6px;font\-size:10px;font\-weight:700;text\-transform:uppercase\}  
-\.t\-green\{background:rgba\(74,222,128,\.15\);color:var\(\-\-green\)\}  
-\.t\-red\{background:rgba\(248,113,113,\.15\);color:var\(\-\-red\)\}  
-\.t\-blue\{background:rgba\(56,189,248,\.15\);color:var\(\-\-blue\)\}  
-\.t\-orange\{background:rgba\(251,146,60,\.15\);color:var\(\-\-orange\)\}  
-\.t\-grey\{background:rgba\(148,163,184,\.15\);color:var\(\-\-txt2\)\}  
-\.prog\{width:100%;height:10px;background:rgba\(255,255,255,\.09\);border\-radius:6px;overflow:hidden;margin:14px 0\}  
-\.prog\-fill\{height:100%;border\-radius:6px;transition:width \.8s\}  
-\.liq\{padding:24px;margin\-bottom:20px\}  
-\.liq h3\{font\-size:15px;margin\-bottom:14px\}  
-\.liq\-row\{display:flex;justify\-content:space\-between;font\-size:13px;color:var\(\-\-txt2\);margin:6px 0\}  
-\.liq\-row b\{color:var\(\-\-txt\)\}  
-\.chart\-box\{padding:24px;margin\-bottom:20px\}  
-\.chart\-box h3\{font\-size:15px;margin\-bottom:14px\}  
-\.cc\-grid\{display:grid;grid\-template\-columns:repeat\(auto\-fit,minmax\(280px,1fr\)\);gap:16px;margin\-bottom:22px\}  
-\.cc\{padding:22px;position:relative;overflow:hidden\}  
-\.cc::before\{content:'';position:absolute;inset:0;opacity:\.14;background:linear\-gradient\(135deg,var\(\-\-cc1\),var\(\-\-cc2\)\)\}  
-\.cc>\*\{position:relative\}  
-\.cc \.top\{display:flex;justify\-content:space\-between;align\-items:center;margin\-bottom:12px\}  
-\.cc \.name\{font\-weight:700;font\-size:15px\}  
-\.cc \.fatura\{font\-size:24px;font\-weight:800\}  
-\.cc \.venc\{font\-size:12px;color:var\(\-\-txt2\)\}  
-\.cc \.lim\{font\-size:12px;color:var\(\-\-txt2\);display:flex;justify\-content:space\-between\}  
-\.cc \.actions\{display:flex;gap:8px;margin\-top:12px\}  
-\.inv\-grid\{display:grid;grid\-template\-columns:repeat\(auto\-fit,minmax\(230px,1fr\)\);gap:14px;margin\-bottom:22px\}  
-\.form\-card\{max\-width:560px;margin:0 auto;padding:28px\}  
-\.form\-card \.field\{margin\-bottom:18px\}  
-\.form\-card label\{display:block;font\-size:11px;color:var\(\-\-txt2\);text\-transform:uppercase;letter\-spacing:\.07em;font\-weight:700;margin\-bottom:7px\}  
-\.form\-card input,\.form\-card select\{width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit;font\-size:14px;appearance:none;\-webkit\-appearance:none\}  
-\.form\-card input:focus,\.form\-card select:focus\{border\-color:rgba\(56,189,248,\.6\);background:rgba\(56,189,248,\.06\);outline:none\}  
-input\[type=date\]\{color\-scheme:dark\}  
-select option\{background:\#0a0e1a;color:var\(\-\-txt\)\}  
-\.form\-row\{display:grid;grid\-template\-columns:1fr 1fr;gap:14px\}  
-\.form\-card \.btn\{width:100%;margin\-top:6px;padding:13px;font\-size:14px\}  
-\#status,\#cancelStatus,\#invStatus,\#antStatus,\#transStatus,\#repStatus\{margin\-top:14px;text\-align:center;font\-size:13px;font\-weight:600;min\-height:20px\}  
-\.ok\{color:var\(\-\-green\)\}\.err\{color:var\(\-\-red\)\}  
-\.sec\-title\{font\-size:15px;font\-weight:700;margin:24px 0 12px\}  
-\.mini\-card\{padding:20px\}  
-section h3\{font\-size:15px;font\-weight:700;margin:24px 0 12px\}  
-@media\(max\-width:640px\)\{\.wrap\{padding:18px 14px 48px\}header h1\{font\-size:21px\}\.nav\-grid\{grid\-template\-columns:1fr 1fr\}\.kpi \.val\{font\-size:20px\}\.form\-row\{grid\-template\-columns:1fr\}\}  
-</style>  
-</head>  
-<body>  
-<div class="wrap">  
-<header>  
-<h1>Controle Orçamentário</h1>  
-<p class="sub">Dashboard financeiro pessoal de Matheus Homci</p>  
-<div class="badge">MATHEUS HOMCI · FINANÇAS PESSOAIS</div>  
-<div class="toolbar">  
-<button class="btn" onclick="loadAll\(\)">↻ Atualizar dados</button>  
-<span class="meta" id="meta">Carregando…</span>  
-</div>  
-</header>  
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle Orçamentário · Matheus Homci</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e1a;--card:rgba(255,255,255,.055);--border:rgba(255,255,255,.1);
+  --txt:#fff;--txt2:#94a3b8;--blue:#38bdf8;--green:#4ade80;--red:#f87171;
+  --purple:#a78bfa;--orange:#fb923c;--teal:#2dd4bf;--pink:#f472b6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;
+  line-height:1.55;min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(600px 300px at 10% -5%,rgba(56,189,248,.13),transparent 60%),
+    radial-gradient(600px 300px at 90% 0%,rgba(167,139,250,.13),transparent 60%),
+    radial-gradient(500px 400px at 50% 110%,rgba(45,212,191,.08),transparent 60%);
+}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+header{text-align:center;margin-bottom:22px}
+header h1{
+  font-size:26px;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(90deg,var(--blue),var(--purple));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+header p{color:var(--txt2);font-size:13px;margin-top:4px}
+.badge{
+  display:inline-block;margin-top:10px;padding:5px 14px;border-radius:20px;
+  background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);
+  color:var(--blue);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+.toolbar{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{
+  background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--txt);
+  padding:8px 16px;border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.25s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.btn:hover{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.4);transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.meta{color:var(--txt2);font-size:11px}
+.glass{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:26px}
+.chip{padding:14px 16px;border-radius:14px;transition:.25s}
+.chip .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.chip .val{font-size:20px;font-weight:800;margin-top:4px}
+.chip .sub{font-size:10px;color:var(--txt2);margin-top:2px}
+.view{display:none;animation:fade .3s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.nav-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.nav-card{
+  position:relative;text-align:left;color:var(--txt);font-family:inherit;
+  padding:24px;border-radius:18px;cursor:pointer;transition:.25s;overflow:hidden;
+  background:var(--card);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+.nav-card:hover{transform:translateY(-4px);border-color:rgba(56,189,248,.45);box-shadow:0 14px 40px rgba(56,189,248,.15)}
+.nav-icon{
+  width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:16px;
+}
+.nav-card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.nav-card p{font-size:12px;color:var(--txt2);line-height:1.5}
+.nav-arrow{position:absolute;top:20px;right:20px;color:var(--txt2);font-size:18px;transition:.25s}
+.nav-card:hover .nav-arrow{color:var(--blue);transform:translateX(3px)}
+.sec-title{font-size:17px;font-weight:700;margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+.sec-title .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.kpi{padding:20px}
+.kpi .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.kpi .val{font-size:24px;font-weight:800;margin-top:8px}
+.kpi .sub{font-size:11px;color:var(--txt2);margin-top:4px;line-height:1.5}
+.prog{width:100%;height:10px;background:rgba(255,255,255,.09);border-radius:6px;overflow:hidden;margin:14px 0}
+.prog-fill{height:100%;border-radius:6px;transition:width .8s ease}
+.tbl-wrap{width:100%;overflow-x:auto;border-radius:16px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{
+  text-align:left;padding:12px 14px;background:rgba(255,255,255,.05);
+  color:var(--txt2);font-size:10px;text-transform:uppercase;letter-spacing:.07em;
+  border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap;
+}
+td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr.hl{background:rgba(167,139,250,.08);font-weight:700}
+.tag{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.t-green{background:rgba(74,222,128,.15);color:var(--green)}
+.t-red{background:rgba(248,113,113,.15);color:var(--red)}
+.t-blue{background:rgba(56,189,248,.15);color:var(--blue)}
+.t-orange{background:rgba(251,146,60,.15);color:var(--orange)}
+.t-grey{background:rgba(148,163,184,.15);color:var(--txt2)}
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cc{padding:22px;position:relative;overflow:hidden}
+.cc::before{
+  content:'';position:absolute;inset:0;opacity:.14;pointer-events:none;
+  background:linear-gradient(135deg,var(--cc1,#38bdf8),var(--cc2,#a78bfa));
+}
+.cc .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:relative}
+.cc .name{font-weight:800;font-size:14px}
+.cc .fatura{font-size:24px;font-weight:800;margin:4px 0 2px;position:relative}
+.cc .venc{font-size:11px;color:var(--txt2);position:relative}
+.cc .lim{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);position:relative;margin-top:8px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--txt2)}
+.breadcrumb button{
+  background:none;border:none;color:var(--blue);font-family:inherit;font-size:13px;
+  font-weight:600;cursor:pointer;padding:4px 8px;border-radius:8px;display:flex;align-items:center;gap:6px;
+}
+.breadcrumb button:hover{background:rgba(56,189,248,.12)}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.liq{padding:22px;margin-top:16px}
+.liq .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;font-size:14px}
+.chart-box{padding:22px;margin-top:16px}
+.form-card{max-width:560px;margin:0 auto;padding:28px}
+.form-card .field{margin-bottom:18px}
+.form-card label{display:block;font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:7px}
+.form-card input,.form-card select{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--txt);font-family:inherit;font-size:14px;
+  transition:.25s;-webkit-appearance:none;appearance:none;
+}
+.form-card input:focus,.form-card select:focus{outline:none;border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.06)}
+.form-card input[type=date]{color-scheme:dark}
+.form-card select option{background:#0a0e1a;color:var(--txt)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-card .btn{width:100%;margin-top:6px;padding:13px;font-size:14px}
+#status{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#status.ok{color:var(--green)}
+#status.err{color:var(--red)}
+#cancelStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#cancelStatus.ok{color:var(--green)}
+#cancelStatus.err{color:var(--red)}
+#invStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#invStatus.ok{color:var(--green)}
+#invStatus.err{color:var(--red)}
+#antStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#antStatus.ok{color:var(--green)}
+#antStatus.err{color:var(--red)}
+#transStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#transStatus.ok{color:var(--green)}
+#transStatus.err{color:var(--red)}
+#repStatus{margin-top:14px;text-align:center;font-size:13px;font-weight:600;min-height:20px}
+#repStatus.ok{color:var(--green)}
+#repStatus.err{color:var(--red)}
+footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border)}
+@media(max-width:640px){
+  .wrap{padding:18px 14px 48px}
+  header h1{font-size:21px}
+  .nav-grid{grid-template-columns:1fr 1fr}
+  .kpi .val{font-size:20px}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>Controle Orçamentário</h1>
+    Matheus Homci · Dashboard pessoal · Dados da planilha
+
+
+    Cenário: Out/2026 em diante
+    
+      <button class="btn" onclick="loadAll()">↻ Atualizar dados</button>
+      Carregando…
+    
+
+
+  </header>
   
-<section id="view\-home" class="view active">  
-<div class="nav\-grid" id="navGrid"></div>  
-<footer>Dados lidos direto do Google Sheets · Atualize a página ou clique em Atualizar dados</footer>  
-</section>  
+
+
+
   
-<section id="view\-lancamento" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Novo Lançamento</div>  
-<div class="glass form\-card">  
-<h3 style="margin\-bottom:18px">Registrar lançamento</h3>  
-<form id="formLancamento">  
-<div class="field"><label>Data</label><input type="date" id="data"></div>  
-<div class="field"><label>Categoria</label>  
-<select id="categoria" onchange="toggleConta\(\)">  
-<option value="">Selecione…</option>  
-<option value="PIX">PIX \(Conta Corrente\)</option>  
-<option value="Cartão Bradesco">Cartão Bradesco</option>  
-<option value="Cartão Inter">Cartão Inter</option>  
-<option value="Cartão Mercado Pago">Cartão Mercado Pago</option>  
-<option value="Cartão Nubank">Cartão Nubank</option>  
-<option value="Cartão Riachuelo">Cartão Riachuelo</option>  
-</select></div>  
-<div class="field" id="contaField" style="display:none"><label>Conta</label>  
-<select id="conta"><option>Bradesco</option><option>Inter</option><option>Mercado Pago</option><option>Nubank</option><option>Midway</option></select></div>  
-<div class="form\-row">  
-<div class="field"><label>Valor</label><input type="number" id="valor" step="0\.01" min="0" placeholder="0,00"></div>  
-<div class="field"><label>Tipo</label><select id="tipo"><option value="saida">Saída</option><option value="entrada">Entrada</option></select></div>  
-</div>  
-<div class="field"><label>Parcelamento</label>  
-<select id="parcelado" onchange="toggleParcelamento\(\)">  
-<option value="nao">À vista</option><option value="sim">Parcelado</option></select></div>  
-<div class="form\-row" id="parcelaFields" style="display:none">  
-<div class="field"><label>Parcelas</label><input type="number" id="parcelas" min="1" max="24" value="1"></div>  
-<div class="field"><label>Parcela atual</label><input type="number" id="parcelaAtual" min="1" max="24" value="1"></div>  
-</div>  
-<div class="field"><label>Descrição</label><input type="text" id="descricao" placeholder="Ex\.: Pissolati Café, mercado, salário…"></div>  
-<button type="submit" class="btn" id="btnSalvar">Salvar lançamento</button>  
-</form>  
-<p id="status"></p>  
-</div>  
-<h3 style="margin:26px 0 12px;text\-align:center">Transferir entre contas</h3>  
-<div class="glass mini\-card" style="max\-width:560px;margin:0 auto">  
-<div class="form\-row">  
-<div class="field"><label>Origem</label><select id="transOrigem"><option>Bradesco</option><option>Inter</option><option>Mercado Pago</option><option>Nubank</option><option>Midway</option></select></div>  
-<div class="field"><label>Destino</label><select id="transDestino"><option>Midway</option><option>Bradesco</option><option>Inter</option><option>Mercado Pago</option><option>Nubank</option></select></div>  
-</div>  
-<div class="form\-row">  
-<div class="field"><label>Valor</label><input type="number" id="transValor" step="0\.01" min="0" placeholder="0,00"></div>  
-<div class="field"><label>Data</label><input type="date" id="transData"></div>  
-</div>  
-<button class="btn" style="width:100%" onclick="transferirContas\(\)">⇄ Transferir</button>  
-<p id="transStatus"></p>  
-</div>  
-</section>  
+    
+      <button class="nav-card" onclick="go('lancamento')">
+        →
+        ➕
+
+
+        <h3>Novo Lançamento</h3>
+        Registre entrada/saída e transfira entre contas.
+
+
+      </button>
+      <button class="nav-card" onclick="go('cancelar')">
+        →
+        🗑️
+
+
+        <h3>Cancelar Lançamento</h3>
+        Remova um lançamento registrado e reverta seus efeitos.
+
+
+      </button>
+      <button class="nav-card" onclick="go('overview')">
+        →
+        📊
+
+
+        <h3>Visão Geral</h3>
+        KPIs, saldo por conta, liquidez e projeção mensal.
+
+
+      </button>
+      <button class="nav-card" onclick="go('credit')">
+        →
+        💳
+
+
+        <h3>Gestão de Crédito</h3>
+        Limites, pagamento, desfazer, repasses e antecipação.
+
+
+      </button>
+      <button class="nav-card" onclick="go('faturas')">
+        →
+        🧾
+
+
+        <h3>Faturas</h3>
+        Detalhamento completo de cada fatura do mês.
+
+
+      </button>
+      <button class="nav-card" onclick="go('cronograma')">
+        →
+        📅
+
+
+        <h3>Cronograma</h3>
+        Parcelamentos por cartão e obrigações mês a mês.
+
+
+      </button>
+      <button class="nav-card" onclick="go('invest')">
+        →
+        📈
+
+
+        <h3>Investimentos</h3>
+        Reservas acumuladas, aportes e resgates.
+
+
+      </button>
+      <button class="nav-card" onclick="go('extrato')">
+        →
+        📋
+
+
+        <h3>Extrato</h3>
+        Entradas e saídas registradas no período.
+
+
+      </button>
+      <button class="nav-card" onclick="go('repasses')">
+        →
+        💸
+
+
+        <h3>Repasses Futuros</h3>
+        Receitas e saídas previstas do mês, com conclusão e recorrência.
+
+
+      </button>
+    
+
+
+    <footer>Dados lidos direto do Google Sheets · Atualize a página ou clique em "Atualizar dados"</footer>
   
-<section id="view\-cancelar" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Cancelar Lançamento</div>  
-<div class="glass tbl\-wrap"><table id="lancTable"></table></div>  
-<p id="cancelStatus"></p>  
-</section>  
+
+
+
   
-<section id="view\-overview" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Visão Geral</div>  
-<div class="kpi\-grid" id="kpiGrid"></div>  
-<div class="glass liq" id="liqCard"></div>  
-<h3>Saldo por Conta</h3>  
-<div class="glass tbl\-wrap"><table id="contasTable"></table></div>  
-<div class="glass chart\-box"><h3>Projeção de Gastos Fixos</h3>  
-<div style="height:300px"><canvas id="chartMensal"></canvas></div></div>  
-</section>  
+    <button onclick="go('home')">← Início</button>/Novo Lançamento
+
+
+    
+      <h3 class="sec-title" style="margin-top:0">Registrar lançamento</h3>
+      <form id="formLancamento">
+        
+          <label>Data</label>
+          <input type="date" id="data">
+        
+
+
+        
+          <label>Categoria / Origem</label>
+          <select id="categoria" onchange="toggleConta()" required>
+            <option value="">Selecione…</option>
+            <option value="PIX">PIX (Conta Corrente)</option>
+            <option value="Bradesco">Cartão Bradesco</option>
+            <option value="Inter">Cartão Inter</option>
+            <option value="Mercado Pago">Cartão Mercado Pago</option>
+            <option value="Nubank">Cartão Nubank</option>
+            <option value="Riachuelo">Cartão Riachuelo</option>
+          </select>
+        
+
+
+        
+          <label>Conta (PIX)</label>
+          <select id="conta">
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Midway">Midway</option>
+          </select>
+        
+
+
+        
+          
+            <label>Valor (R$)</label>
+            <input type="number" id="valor" step="0.01" min="0" placeholder="0,00" required>
+          
+
+
+          
+            <label>Tipo</label>
+            <select id="tipo">
+              <option value="saida">Saída</option>
+              <option value="entrada">Entrada</option>
+            </select>
+          
+
+
+        
+
+
+        
+          <label>Parcelado?</label>
+          <select id="parcelado" onchange="toggleParcelamento()">
+            <option value="nao">À vista</option>
+            <option value="sim">Parcelado</option>
+          </select>
+        
+
+
+        
+          
+            <label>Nº de parcelas</label>
+            <input type="number" id="parcelas" min="1" max="24" value="1">
+          
+
+
+          
+            <label>Parcela atual</label>
+            <input type="number" id="parcelaAtual" min="1" max="24" value="1">
+          
+
+
+        
+
+
+        
+          <label>Descrição</label>
+          <input type="text" id="descricao" placeholder="Ex.: Pissolati Café, mercado, salário…" required>
+        
+
+
+        <button type="submit" class="btn" id="btnSalvar">Salvar lançamento</button>
+      </form>
+      
+
+
+    
+
+
+    <h3 class="sec-title">Transferir entre contas</h3>
+    
+      
+        
+          <label>Origem</label>
+          <select id="transOrigem">
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Midway">Midway</option>
+          </select>
+        
+
+
+        
+          <label>Destino</label>
+          <select id="transDestino">
+            <option value="Midway">Midway</option>
+            <option value="Bradesco">Bradesco</option>
+            <option value="Inter">Inter</option>
+            <option value="Mercado Pago">Mercado Pago</option>
+            <option value="Nubank">Nubank</option>
+          </select>
+        
+
+
+      
+
+
+      
+        
+          <label>Valor (R$)</label>
+          <input type="number" id="transValor" step="0.01" min="0" placeholder="0,00">
+        
+
+
+        
+          <label>Data</label>
+          <input type="date" id="transData">
+        
+
+
+      
+
+
+      <button class="btn" onclick="transferirContas()">⇄ Transferir</button>
+      
+
+
+    
+
+
   
-<section id="view\-credit" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Gestão de Crédito</div>  
-<div class="cc\-grid" id="ccGrid"></div>  
-<h3>Limites por Cartão</h3>  
-<div class="glass tbl\-wrap"><table id="limTable"></table></div>  
-<h3>Repasses PIX</h3>  
-<div class="glass mini\-card">  
-<div style="display:flex;gap:10px;flex\-wrap:wrap">  
-<button class="btn" onclick="confirmarRepasse\('beli'\)">💸 Confirmar PIX Beli \(R$ 274,80\)</button>  
-<button class="btn" onclick="confirmarRepasse\('reserva'\)">🏦 Confirmar repasse reserva \(R$ 100,00\)</button>  
-</div>  
-<p style="font\-size:12px;color:var\(\-\-txt2\);margin\-top:12px">Registra o repasse mensal de PIX para Beli e a transferência da reserva\. Os valores são debitados das contas correspondentes\.</p>  
-</div>  
-<h3>Antecipação de Parcelas</h3>  
-<div class="glass mini\-card">  
-<div style="display:flex;gap:12px;align\-items:center;flex\-wrap:wrap">  
-<select id="antCartao" onchange="atualizarPrevisaoAntecipacao\(\)" style="padding:10px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit">  
-<option value="riachuelo">Riachuelo</option><option value="bradesco">Bradesco</option><option value="inter">Inter</option><option value="mercado pago">Mercado Pago</option></select>  
-<span style="font\-size:13px;color:var\(\-\-txt2\)">Total restante: <strong id="antTotal">R$ 0,00</strong></span>  
-<button class="btn" onclick="anteciparParcelas\(\)">⚡ Antecipar e quitar parcelas</button>  
-</div>  
-<p style="font\-size:12px;color:var\(\-\-txt2\);margin\-top:12px">Quitando as parcelas futuras do cartão selecionado, o valor total é lançado na fatura atual e as linhas do cronograma são marcadas como quitadas\.</p>  
-<p id="antStatus"></p>  
-</div>  
-</section>  
+
+
+
   
-<section id="view\-faturas" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Faturas</div>  
-<div id="faturasContent"></div>  
-</section>  
+    <button onclick="go('home')">← Início</button>/Cancelar Lançamento
+
+
+    
+
+
+    
+
+
   
-<section id="view\-cronograma" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Cronograma</div>  
-<div id="cronContent"></div>  
-</section>  
+
+
+
   
-<section id="view\-invest" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Investimentos</div>  
-<div class="inv\-grid" id="invGrid"></div>  
-<h3>Movimentar Investimentos</h3>  
-<div class="glass mini\-card" style="max\-width:560px">  
-<div class="field" style="margin\-bottom:14px"><label>Conta</label>  
-<select id="invConta" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit">  
-<option value="inter">Inter \(Reserva de Emergência\)</option><option value="nubank">Nubank \(Férias Argentina\)</option></select></div>  
-<div class="field" style="margin\-bottom:14px"><label>Operação</label>  
-<select id="invTipo" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit">  
-<option value="adicionar">➕ Adicionar \(aporte\)</option><option value="retirar">➖ Retirar \(resgate\)</option></select></div>  
-<div class="field" style="margin\-bottom:14px"><label>Valor</label>  
-<input type="number" id="invValor" step="0\.01" min="0" placeholder="0,00" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"></div>  
-<button class="btn" id="btnInv" style="width:100%" onclick="movimentarInvestimento\(\)">Confirmar movimentação</button>  
-<p id="invStatus"></p>  
-</div>  
-</section>  
+    <button onclick="go('home')">← Início</button>/Visão Geral
+
+
+    
+
+
+    
+
+
+    <h3 class="sec-title">Saldo por Conta</h3>
+    
+
+
+    
+      <h3 class="sec-title" style="margin-top:0">Projeção de Gastos Fixos</h3>
+      <canvas id="chartMensal"></canvas>
+
+
+    
+
+
   
-<section id="view\-extrato" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Extrato</div>  
-<div class="glass tbl\-wrap"><table id="extTable"></table></div>  
-</section>  
+
+
+
   
-<section id="view\-repasses" class="view">  
-<div class="breadcrumb"><button onclick="go\('home'\)">← Início</button> / Repasses Futuros</div>  
-<div class="kpi\-grid" id="repKpis"></div>  
-<h3>Recorrentes</h3>  
-<div class="glass tbl\-wrap"><table id="repRecTable"></table></div>  
-<h3>Pontuais</h3>  
-<div class="glass tbl\-wrap"><table id="repPontTable"></table></div>  
-<h3>Novo Repasse Futuro</h3>  
-<div class="glass mini\-card" style="max\-width:560px">  
-<div class="field" style="margin\-bottom:14px"><label>Descrição</label><input type="text" id="repDesc" placeholder="Ex\.: Salário — Quinzena" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"></div>  
-<div class="form\-row">  
-<div class="field"><label>Valor</label><input type="number" id="repValor" step="0\.01" min="0" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"></div>  
-<div class="field"><label>Data</label><input type="date" id="repData" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"></div>  
-</div>  
-<div class="form\-row">  
-<div class="field"><label>Tipo</label><select id="repTipo" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"><option>Receita</option><option>Saída</option></select></div>  
-<div class="field"><label>Recorrente</label><select id="repRec" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"><option>Sim</option><option>Não</option></select></div>  
-</div>  
-<div class="field" style="margin\-bottom:14px"><label>Conta</label><select id="repConta" style="width:100%;padding:12px 14px;border\-radius:12px;border:1px solid var\(\-\-border\);background:rgba\(255,255,255,\.05\);color:var\(\-\-txt\);font\-family:inherit"><option>Bradesco</option><option>Inter</option><option>Mercado Pago</option><option>Nubank</option><option>Midway</option></select></div>  
-<button class="btn" style="width:100%" onclick="addRepasse\(\)">Adicionar repasse</button>  
-<p id="repStatus"></p>  
-</div>  
-</section>  
-</div>  
+    <button onclick="go('home')">← Início</button>/Gestão de Crédito
+
+
+    
+
+
+    <h3 class="sec-title">Limites por Cartão</h3>
+    
+
+
+    <h3 class="sec-title">Repasses PIX</h3>
+    
+      
+        <button class="btn" onclick="confirmarRepasse('beli')">💸 Confirmar PIX Beli (R$ 274,80)</button>
+        <button class="btn" onclick="confirmarRepasse('reserva')">🏦 Confirmar repasse reserva (R$ 100,00)</button>
+      
+
+
+      Confirme cada repasse após fazer o PIX. O valor é registrado no extrato e deduzido do saldo automaticamente.
+
+
+    
+
+
+    <h3 class="sec-title">Antecipação de Parcelas</h3>
+    
+      
+        <label>Cartão</label>
+        <select id="antCartao" onchange="atualizarPrevisaoAntecipacao()">
+          <option value="riachuelo">Riachuelo</option>
+          <option value="bradesco">Bradesco</option>
+          <option value="inter">Inter</option>
+          <option value="mercado pago">Mercado Pago</option>
+        </select>
+      
+
+
+      
+        Total restante em parcelas: **—**
+        <button class="btn" onclick="anteciparParcelas()">⚡ Antecipar e quitar parcelas</button>
+      
+
+
+      A antecipação quita todas as parcelas restantes do cartão de uma vez, zera a fatura, libera o limite e desconta o total do saldo da conta.
+
+
+      
+
+
+    
+
+
   
-<script>  
-const SHEET\_BASE='https://docs\.google\.com/spreadsheets/d/e/2PACX\-1vTn3WVpXjtEOzekF4UXmzQKij\_bnjcq3QEKB9Cs5tC3tDa2kE7lsZlg9\-dPF25f6Tm6tKi3CmYoLp9S/pub';  
-const GIDS=\{resumo:0,limites:541806221,faturas:2070944204,extrato:1171372127,cronograma:1731209628,investimentos:1278202952,mensal:1583243318,bradesco:1531971815,inter:1033034888,mp:1004144872,nubank:1136662366,riachuelo:1071605803,contas:600244146,lancamentos:898101089,cronBradesco:858683647,cronInter:279879354,cronMP:1960408749,cronRepasses:546669957,cronRiachuelo:1658638578,repassesFuturos:449747573\};  
-const URL\_SCRIPT='https://script\.google\.com/macros/s/AKfycbxeebWVZZHr1WJvlutFXoK\-\-r\-RlGQB\-GX0fA1XSS95CESPk\_gMRbaCOruZbVtFeozz4A/exec';  
-const CARD\_KEY=\{'Bradesco Visa':'bradesco','Inter Mastercard':'inter','Mercado Pago Visa':'mercado pago','Nubank Mastercard':'nubank','Riachuelo':'riachuelo'\};  
-const CRON\_KEY\_MAP=\{'bradesco':'cronBradesco','inter':'cronInter','mercado pago':'cronMP','riachuelo':'cronRiachuelo'\};  
-const CRON\_SECTIONS=\[\{label:'Bradesco',key:'cronBradesco',color:'\#38bdf8'\},\{label:'Inter',key:'cronInter',color:'\#f87171'\},\{label:'Mercado Pago',key:'cronMP',color:'\#fb923c'\},\{label:'Riachuelo',key:'cronRiachuelo',color:'\#f472b6'\},\{label:'Repasses PIX \+ Investimentos',key:'cronRepasses',color:'\#2dd4bf'\}\];  
-const REPASSES=\{beli:274\.80,reserva:100\};  
-const SHORT\_LABEL=\{'Saldo em Contas':'Saldo','Liquidez Real Projetada':'Liquidez','Limite Conjugado Disponível':'Limite Livre','Total Faturas':'Faturas'\};  
-let DB=\{\},chart=null;  
+
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- utilitários \-\-\-\-\-\-\-\-\-\- \*/  
-function parseCSV\(text\)\{  
-  const rows=\[\];let row=\[\],cur='',inq=false;  
-  for\(let i=0;i<text\.length;i\+\+\)\{  
-    const c=text\[i\];  
-    if\(inq\)\{  
-      if\(c==='"'\)\{ if\(text\[i\+1\]==='"'\)\{cur\+='"';i\+\+;\} else inq=false; \}  
-      else cur\+=c;  
-    \} else \{  
-      if\(c==='"'\) inq=true;  
-      else if\(c===','\)\{row\.push\(cur\);cur='';\}  
-      else if\(c==='\\n'\)\{row\.push\(cur\);rows\.push\(row\);row=\[\];cur='';\}  
-      else if\(c==='\\r'\)\{\}  
-      else cur\+=c;  
-    \}  
-  \}  
-  if\(cur\!==''||row\.length\)\{row\.push\(cur\);rows\.push\(row\);\}  
-  return rows\.filter\(r=>r\.some\(x=>String\(x\)\.trim\(\)\!==''\)\);  
-\}  
-function cell\(r,i\)\{return \(r&&r\[i\]\!==undefined&&r\[i\]\!==null\)?String\(r\[i\]\)\.trim\(\):'';\}  
-function parseNum\(v\)\{  
-  if\(v===undefined||v===null\)return null;  
-  let s=String\(v\)\.replace\(/\[\\u00A0\\u200B\\uFEFF\]/g,''\)\.replace\(/\["'\]/g,''\)\.trim\(\);  
-  if\(\!s||s==='\-'||s==='—'\)return null;  
-  s=s\.replace\(/R\\$/gi,''\)\.replace\(/%/g,''\)\.trim\(\);  
-  if\(\!s\)return null;  
-  if\(s\.indexOf\(','\)\!==\-1\)\{s=s\.replace\(/\\\./g,''\)\.replace\(',','\.'\);\}  
-  s=s\.replace\(/\[^0\-9\.\\\-\]/g,''\);  
-  if\(s===''||s==='\-'\)return null;  
-  const n=parseFloat\(s\);  
-  return isNaN\(n\)?null:n;  
-\}  
-function parseNumSafe\(v,label\)\{  
-  const n=parseNum\(v\);  
-  if\(n===null\)\{console\.warn\('\[parseNumSafe\] valor não numérico \('\+\(label||''\)\+'\):',v\);return 0;\}  
-  return n;  
-\}  
-function fmtBRL\(n\)\{return 'R$ '\+n\.toLocaleString\('pt\-BR',\{minimumFractionDigits:2,maximumFractionDigits:2\}\);\}  
-function esc\(s\)\{return String\(s==null?'':s\)\.replace\(/&/g,'&amp;'\)\.replace\(/</g,'&lt;'\)\.replace\(/>/g,'&gt;'\);\}  
-function setMeta\(txt\)\{const el=document\.getElementById\('meta'\);if\(el\)el\.textContent=txt;\}  
+    <button onclick="go('home')">← Início</button>/Faturas
+
+
+    
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- carregamento \-\-\-\-\-\-\-\-\-\- \*/  
-async function loadSheet\(key\)\{  
-  const url=SHEET\_BASE\+'?gid='\+GIDS\[key\]\+'&single=true&output=csv';  
-  const res=await fetch\(url\);  
-  if\(\!res\.ok\)throw new Error\(key\+' HTTP '\+res\.status\);  
-  DB\[key\]=parseCSV\(await res\.text\(\)\);  
-  console\.log\('\[loadSheet\] OK',key,'linhas:',DB\[key\]\.length\);  
-\}  
-async function loadAll\(\)\{  
-  console\.log\('\[loadAll\] iniciando carregamento de',Object\.keys\(GIDS\)\.length,'abas'\);  
-  setMeta\('Atualizando…'\);  
-  const keys=Object\.keys\(GIDS\);  
-  const results=await Promise\.allSettled\(keys\.map\(loadSheet\)\);  
-  const falhas=\[\];  
-  results\.forEach\(\(r,i\)=>\{  
-    if\(r\.status==='rejected'\)\{  
-      falhas\.push\(keys\[i\]\);  
-      DB\[keys\[i\]\]=DB\[keys\[i\]\]||\[\];  
-      console\.warn\('\[loadAll\] FALHOU:',keys\[i\],r\.reason&&r\.reason\.message?r\.reason\.message:r\.reason\);  
-    \}  
-  \}\);  
-  try\{renderAll\(\);\}catch\(e\)\{console\.error\('\[renderAll\] erro:',e\);\}  
-  if\(falhas\.length\)\{setMeta\('Parcial · falhou: '\+falhas\.join\(', '\)\);console\.warn\('\[loadAll\] falhas:',falhas\);\}  
-  else\{setMeta\('Atualizado: '\+new Date\(\)\.toLocaleString\('pt\-BR'\)\);console\.log\('\[loadAll\] concluído com sucesso'\);\}  
-\}  
+
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- views \-\-\-\-\-\-\-\-\-\- \*/  
-function go\(view\)\{  
-  document\.querySelectorAll\('\.view'\)\.forEach\(v=>v\.classList\.remove\('active'\)\);  
-  const el=document\.getElementById\('view\-'\+view\);  
-  if\(el\)el\.classList\.add\('active'\);  
-  window\.scrollTo\(\{top:0,behavior:'smooth'\}\);  
-\}  
+    <button onclick="go('home')">← Início</button>/Cronograma
+
+
+    
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- hub \-\-\-\-\-\-\-\-\-\- \*/  
-const NAV=\[  
- \['➕','linear\-gradient\(135deg,\#4ade80,\#22d3ee\)','Novo Lançamento','Registre entrada/saída e transfira entre contas\.','lancamento'\],  
- \['🗑️','linear\-gradient\(135deg,\#f87171,\#fb923c\)','Cancelar Lançamento','Remova um lançamento registrado e reverta seus efeitos\.','cancelar'\],  
- \['📊','linear\-gradient\(135deg,\#38bdf8,\#a78bfa\)','Visão Geral','KPIs, saldo por conta, liquidez e projeção mensal\.','overview'\],  
- \['💳','linear\-gradient\(135deg,\#a78bfa,\#6366f1\)','Gestão de Crédito','Limites, pagamento, desfazer, repasses e antecipação\.','credit'\],  
- \['🧾','linear\-gradient\(135deg,\#4ade80,\#38bdf8\)','Faturas','Detalhamento completo de cada fatura do mês\.','faturas'\],  
- \['📅','linear\-gradient\(135deg,\#fb923c,\#f87171\)','Cronograma','Parcelamentos por cartão e obrigações mês a mês\.','cronograma'\],  
- \['📈','linear\-gradient\(135deg,\#2dd4bf,\#38bdf8\)','Investimentos','Reservas acumuladas, aportes e resgates\.','invest'\],  
- \['📋','linear\-gradient\(135deg,\#f87171,\#f472b6\)','Extrato','Entradas e saídas registradas no período\.','extrato'\],  
- \['💸','linear\-gradient\(135deg,\#fb923c,\#fbbf24\)','Repasses Futuros','Receitas e saídas previstas do mês, com conclusão e recorrência\.','repasses'\]  
-\];  
-function renderNav\(\)\{  
-  const g=document\.getElementById\('navGrid'\);if\(\!g\)return;  
-  g\.innerHTML=NAV\.map\(n=>'<div class="glass nav\-card" onclick="go\(\\''\+n\[4\]\+'\\'\)"><span class="nav\-arrow">→</span><div class="nav\-icon" style="background:'\+n\[1\]\+'">'\+n\[0\]\+'</div><h3>'\+n\[2\]\+'</h3><p>'\+n\[3\]\+'</p></div>'\)\.join\(''\);  
-\}  
+
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- render \-\-\-\-\-\-\-\-\-\- \*/  
-function renderAll\(\)\{  
-  renderNav\(\);renderChips\(\);renderOverview\(\);renderContas\(\);renderCredit\(\);renderFaturas\(\);  
-  renderCronograma\(\);renderInvest\(\);renderExtrato\(\);renderLancamentos\(\);renderRepasses\(\);  
-  atualizarPrevisaoAntecipacao\(\);  
-\}  
-function renderChips\(\)\{  
-  const el=document\.getElementById\('chips'\);if\(\!el\)return;  
-  const rows=\(DB\.resumo||\[\]\)\.slice\(1\)\.slice\(0,4\);  
-  el\.innerHTML=rows\.map\(r=>\{  
-    const lbl=cell\(r,0\),short=SHORT\_LABEL\[lbl\]||lbl;  
-    const num=parseNum\(cell\(r,1\)\);  
-    return '<div class="glass chip"><div class="lbl">'\+esc\(short\)\+'</div><div class="val" style="font\-size:24px;font\-weight:800;margin\-top:8px">'\+\(num\!==null?fmtBRL\(num\):esc\(cell\(r,1\)\)\)\+'</div><div class="sub" style="font\-size:11px;color:var\(\-\-txt2\);margin\-top:6px">'\+esc\(cell\(r,2\)\)\+'</div></div>';  
-  \}\)\.join\(''\);  
-\}  
-function renderOverview\(\)\{  
-  const el=document\.getElementById\('kpiGrid'\);if\(\!el\)return;  
-  const rows=\(DB\.resumo||\[\]\)\.slice\(1\);  
-  el\.innerHTML=rows\.slice\(0,4\)\.map\(r=>\{  
-    const num=parseNum\(cell\(r,1\)\);  
-    return '<div class="glass kpi"><div class="lbl">'\+esc\(cell\(r,0\)\)\+'</div><div class="val">'\+\(num\!==null?fmtBRL\(num\):esc\(cell\(r,1\)\)\)\+'</div><div class="sub">'\+esc\(cell\(r,2\)\)\+'</div></div>';  
-  \}\)\.join\(''\);  
-  const liq=document\.getElementById\('liqCard'\);if\(\!liq\)return;  
-  const find=\(re\)=>rows\.find\(r=>re\.test\(cell\(r,0\)\)\);  
-  const liqRow=find\(/liquidez/i\),compRow=find\(/comprometimento/i\),saldoRow=find\(/saldo/i\);  
-  const compN=parseNumSafe\(compRow?cell\(compRow,1\):0,'comprometimento'\);  
-  const pct=Math\.min\(100,compN\);  
-  const barColor=pct>80?'linear\-gradient\(90deg,var\(\-\-orange\),var\(\-\-red\)\)':pct>50?'linear\-gradient\(90deg,var\(\-\-blue\),var\(\-\-orange\)\)':'linear\-gradient\(90deg,var\(\-\-green\),var\(\-\-teal\)\)';  
-  liq\.innerHTML='<h3>Análise de Liquidez e Comprometimento</h3>'  
-   \+'<div class="liq\-row"><span>Margem Livre</span><b>'\+\(liqRow?esc\(cell\(liqRow,1\)\):'—'\)\+'</b></div>'  
-   \+'<div class="liq\-row"><span>Comprometimento</span><b>'\+\(compRow?esc\(cell\(compRow,1\)\):'—'\)\+'</b></div>'  
-   \+'<div class="prog"><div class="prog\-fill" style="width:'\+pct\+'%;background:'\+barColor\+'"></div></div>'  
-   \+'<div class="liq\-row"><span>Liquidez após faturas do mês</span><b>'\+\(saldoRow?esc\(cell\(saldoRow,1\)\):'—'\)\+'</b></div>';  
-  renderChart\(\);  
-\}  
-function renderContas\(\)\{  
-  const el=document\.getElementById\('contasTable'\);if\(\!el\)return;  
-  const rows=\(DB\.contas||\[\]\);  
-  if\(rows\.length<2\)\{el\.innerHTML='';return;\}  
-  let h='<thead><tr><th>Conta</th><th>Tipo</th><th>Saldo</th><th>Detalhe</th></tr></thead><tbody>';  
-  rows\.slice\(1\)\.forEach\(r=>\{  
-    const hl=/^total/i\.test\(cell\(r,0\)\);  
-    const num=parseNum\(cell\(r,2\)\);  
-    h\+='<tr'\+\(hl?' class="hl"':''\)\+'><td>'\+esc\(cell\(r,0\)\)\+'</td><td>'\+esc\(cell\(r,1\)\)\+'</td><td>'\+\(num\!==null?fmtBRL\(num\):esc\(cell\(r,2\)\)\)\+'</td><td>'\+esc\(cell\(r,3\)\)\+'</td></tr>';  
-  \}\);  
-  el\.innerHTML=h\+'</tbody>';  
-\}  
-function renderChart\(\)\{  
-  const canvas=document\.getElementById\('chartMensal'\);  
-  if\(\!canvas\)return;  
-  const rows=\(DB\.mensal||\[\]\)\.slice\(1\);  
-  const labels=rows\.map\(r=>cell\(r,0\)\)\.filter\(Boolean\);  
-  const data=rows\.map\(r=>parseNumSafe\(cell\(r,1\),'mensal'\)\);  
-  if\(\!canvas\.parentElement\)return;  
-  const mk=\(msg\)=>\{const p=document\.createElement\('p'\);p\.style\.cssText='color:var\(\-\-txt2\);font\-size:13px';p\.textContent=msg;canvas\.parentElement\.replaceChild\(p,canvas\);\};  
-  if\(typeof Chart==='undefined'\)\{mk\('Gráfico indisponível \(Chart\.js não carregou\)\.'\);return;\}  
-  if\(\!labels\.length\)\{mk\('Sem dados de projeção mensal\.'\);return;\}  
-  if\(chart\)\{chart\.destroy\(\);chart=null;\}  
-  const ctx=canvas\.getContext\('2d'\);if\(\!ctx\)return;  
-  chart=new Chart\(ctx,\{type:'bar',data:\{labels:labels,datasets:\[\{label:'Total Gasto',data:data,backgroundColor:\['\#38bdf8','\#a78bfa','\#4ade80','\#4ade80','\#fb923c','\#fb923c','\#f87171','\#94a3b8'\],borderRadius:8,barPercentage:\.7\}\]\},  
-    options:\{responsive:true,maintainAspectRatio:false,plugins:\{legend:\{labels:\{color:'\#94a3b8'\}\}\},  
-    scales:\{x:\{ticks:\{color:'\#94a3b8'\},grid:\{color:'rgba\(255,255,255,\.05\)'\}\},y:\{ticks:\{color:'\#94a3b8',callback:v=>'R$ '\+v\},grid:\{color:'rgba\(255,255,255,\.05\)'\}\}\}\}\}\);  
-\}  
-const CC\_COLORS=\{'Bradesco':'\#38bdf8','Inter':'\#f87171','Mercado Pago':'\#fb923c','Nubank':'\#4ade80','Riachuelo':'\#f472b6'\};  
-function ccColor\(name\)\{for\(const k in CC\_COLORS\)\{if\(name\.indexOf\(k\)\!==\-1\)return CC\_COLORS\[k\];\}return '\#38bdf8';\}  
-function renderCredit\(\)\{  
-  const grid=document\.getElementById\('ccGrid'\);  
-  const limT=document\.getElementById\('limTable'\);  
-  const faturas=\(DB\.faturas||\[\]\);  
-  let cards='',lim='<thead><tr><th>Cartão</th><th>Limite Total</th><th>Disponível</th><th>% Disponível</th><th>Status</th></tr></thead><tbody>';  
-  \(DB\.limites||\[\]\)\.slice\(1\)\.forEach\(r=>\{  
-    const name=cell\(r,0\),key=CARD\_KEY\[name\]||cell\(r,1\);  
-    const total=parseNumSafe\(cell\(r,2\),'limite '\+name\);  
-    const disp=parseNumSafe\(cell\(r,3\),'disponível '\+name\);  
-    const pctDisp=parseNumSafe\(cell\(r,4\),'% disp '\+name\);  
-    const status=cell\(r,5\);  
-    const uso=Math\.max\(0,Math\.min\(100,100\-pctDisp\)\);  
-    const fat=faturas\.find\(f=>cell\(f,0\)===name\);  
-    const fatV=fat?parseNum\(cell\(fat,1\)\):null;  
-    const color=pctDisp>50?'var\(\-\-green\)':pctDisp>20?'var\(\-\-orange\)':'var\(\-\-red\)';  
-    const tagCls=pctDisp>50?'t\-green':pctDisp>20?'t\-orange':'t\-red';  
-    const c1=ccColor\(name\),c2='\#6366f1';  
-    cards\+='<div class="glass cc" style="\-\-cc1:'\+c1\+';\-\-cc2:'\+c2\+'">'  
-      \+'<div class="top"><span class="name">'\+esc\(name\)\+'</span><span class="tag '\+tagCls\+'">'\+esc\(status\)\+'</span></div>'  
-      \+'<div class="fatura">'\+\(fatV\!==null?fmtBRL\(fatV\):'—'\)\+'</div>'  
-      \+'<div class="venc">Fatura atual'\+\(fat?' · venc\. '\+esc\(cell\(fat,2\)\):''\)\+'</div>'  
-      \+'<div class="prog"><div class="prog\-fill" style="width:'\+uso\+'%;background:'\+c1\+'"></div></div>'  
-      \+'<div class="lim"><span>Uso: '\+uso\.toFixed\(0\)\+'%</span><span>'\+fmtBRL\(disp\)\+' / '\+fmtBRL\(total\)\+'</span></div>'  
-      \+'<div class="actions"><button class="btn" onclick="pagarCartao\(\\''\+key\+'\\',\\''\+esc\(name\)\+'\\'\)">💳 Pagar</button>'  
-      \+'<button class="btn" onclick="desfazerPagamento\(\\''\+key\+'\\',\\''\+esc\(name\)\+'\\'\)">↩ Desfazer</button></div></div>';  
-    lim\+='<tr><td>'\+esc\(name\)\+'</td><td>'\+fmtBRL\(total\)\+'</td><td>'\+fmtBRL\(disp\)\+'</td><td>'\+pctDisp\.toFixed\(1\)\+'%</td><td><span class="tag '\+tagCls\+'">'\+esc\(status\)\+'</span></td></tr>';  
-  \}\);  
-  if\(grid\)grid\.innerHTML=cards;  
-  if\(limT\)limT\.innerHTML=lim\+'</tbody>';  
-\}  
-const FATURAS\_CARDS=\[\['Bradesco Visa','bradesco','\#38bdf8'\],\['Mercado Pago Visa','mp','\#fb923c'\],\['Inter Mastercard','inter','\#f87171'\],\['Nubank Mastercard','nubank','\#64748b'\],\['Riachuelo','riachuelo','\#f472b6'\]\];  
-function renderFaturas\(\)\{  
-  const el=document\.getElementById\('faturasContent'\);if\(\!el\)return;  
-  let h='';  
-  FATURAS\_CARDS\.forEach\(fc=>\{  
-    const rows=\(DB\[fc\[1\]\]||\[\]\)\.slice\(1\)\.filter\(r=>\!/total/i\.test\(cell\(r,0\)\)\);  
-    let total=0;  
-    rows\.forEach\(r=>\{total\+=parseNumSafe\(cell\(r,1\),'fatura '\+fc\[0\]\);\}\);  
-    h\+='<h3 style="color:'\+fc\[2\]\+'">'\+esc\(fc\[0\]\)\+'</h3><div class="glass tbl\-wrap"><table>'  
-      \+'<thead><tr><th>Descrição</th><th>Valor</th><th>Parcela</th><th>Observações</th></tr></thead><tbody>';  
-    rows\.forEach\(r=>\{  
-      const v=parseNum\(cell\(r,1\)\);  
-      h\+='<tr><td>'\+esc\(cell\(r,0\)\)\+'</td><td>'\+\(v\!==null?fmtBRL\(v\):esc\(cell\(r,1\)\)\)\+'</td><td>'\+esc\(cell\(r,2\)\)\+'</td><td>'\+esc\(cell\(r,3\)\)\+'</td></tr>';  
-    \}\);  
-    h\+='<tr class="hl"><td>TOTAL</td><td>'\+fmtBRL\(total\)\+'</td><td></td><td></td></tr>';  
-    h\+='</tbody></table><div style="padding:12px 14px;display:flex;gap:8px">'  
-      \+'<button class="btn" onclick="pagarCartao\(\\''\+CARD\_KEY\[fc\[0\]\]\+'\\',\\''\+fc\[0\]\+'\\'\)">💳 Pagar fatura</button>'  
-      \+'<button class="btn" onclick="desfazerPagamento\(\\''\+CARD\_KEY\[fc\[0\]\]\+'\\',\\''\+fc\[0\]\+'\\'\)">↩ Desfazer pagamento</button></div></div>';  
-  \}\);  
-  el\.innerHTML=h;  
-\}  
-function renderCronograma\(\)\{  
-  const el=document\.getElementById\('cronContent'\);if\(\!el\)return;  
-  let h='';  
-  CRON\_SECTIONS\.forEach\(sec=>\{  
-    const rows=\(DB\[sec\.key\]||\[\]\);  
-    if\(rows\.length<2\)return;  
-    h\+='<h3 style="color:'\+sec\.color\+'">'\+esc\(sec\.label\)\+'</h3><div class="glass tbl\-wrap"><table><thead><tr>';  
-    rows\[0\]\.forEach\(c=>\{h\+='<th>'\+esc\(c\)\+'</th>';\}\);  
-    h\+='</tr></thead><tbody>';  
-    rows\.slice\(1\)\.forEach\(r=>\{  
-      const isSub=/subtotal/i\.test\(cell\(r,0\)\);  
-      h\+='<tr'\+\(isSub?' style="background:rgba\(56,189,248,\.08\);font\-weight:700"':''\)\+'>';  
-      r\.forEach\(c=>\{h\+='<td>'\+esc\(c\)\+'</td>';\}\);  
-      h\+='</tr>';  
-    \}\);  
-    h\+='</tbody></table></div>';  
-  \}\);  
-  const res=\(DB\.cronograma||\[\]\);  
-  if\(res\.length>=2\)\{  
-    h\+='<h3>Resumo Consolidado</h3><div class="glass tbl\-wrap"><table><thead><tr>';  
-    res\[0\]\.forEach\(c=>\{h\+='<th>'\+esc\(c\)\+'</th>';\}\);  
-    h\+='</tr></thead><tbody>';  
-    res\.slice\(1\)\.forEach\(r=>\{  
-      const isSub=/subtotal/i\.test\(cell\(r,0\)\),isTot=/total/i\.test\(cell\(r,0\)\);  
-      h\+='<tr'\+\(isSub?' style="background:rgba\(56,189,248,\.08\);font\-weight:700"':\(isTot?' class="hl"':''\)\)\+'>';  
-      r\.forEach\(c=>\{h\+='<td>'\+esc\(c\)\+'</td>';\}\);  
-      h\+='</tr>';  
-    \}\);  
-    h\+='</tbody></table></div>';  
-  \}  
-  el\.innerHTML=h||'<p style="color:var\(\-\-txt2\)">Sem dados de cronograma\.</p>';  
-\}  
-function renderInvest\(\)\{  
-  const el=document\.getElementById\('invGrid'\);if\(\!el\)return;  
-  const rows=\(DB\.investimentos||\[\]\)\.slice\(1\);  
-  el\.innerHTML=rows\.map\(r=>\{  
-    const num=parseNum\(cell\(r,1\)\);  
-    const tot=/total/i\.test\(cell\(r,0\)\);  
-    return '<div class="glass kpi"'\+\(tot?' style="border:1px solid rgba\(167,139,250,\.5\);background:rgba\(167,139,250,\.08\)"':''\)\+'><div class="lbl">'\+esc\(cell\(r,0\)\)\+'</div><div class="val">'\+\(num\!==null?fmtBRL\(num\):esc\(cell\(r,1\)\)\)\+'</div><div class="sub">'\+esc\(cell\(r,2\)\)\+'</div></div>';  
-  \}\)\.join\(''\);  
-\}  
-function renderExtrato\(\)\{  
-  const el=document\.getElementById\('extTable'\);if\(\!el\)return;  
-  const rows=\(DB\.extrato||\[\]\);  
-  if\(rows\.length<2\)\{el\.innerHTML='';return;\}  
-  let h='<thead><tr><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody>';  
-  rows\.slice\(1\)\.forEach\(r=>\{  
-    const tipo=cell\(r,1\),ent=/entrada/i\.test\(tipo\);  
-    const num=parseNum\(cell\(r,2\)\);  
-    h\+='<tr><td>'\+esc\(cell\(r,0\)\)\+'</td><td><span class="tag '\+\(ent?'t\-green':'t\-red'\)\+'">'\+esc\(tipo\)\+'</span></td>'  
-      \+'<td style="color:'\+\(ent?'var\(\-\-green\)':'var\(\-\-red\)'\)\+'">'\+\(ent?'\+ ':'− '\)\+\(num\!==null?fmtBRL\(Math\.abs\(num\)\):esc\(cell\(r,2\)\)\)\+'</td>'  
-      \+'<td>'\+esc\(cell\(r,3\)\)\+'</td></tr>';  
-  \}\);  
-  el\.innerHTML=h\+'</tbody>';  
-\}  
-function renderLancamentos\(\)\{  
-  const el=document\.getElementById\('lancTable'\);if\(\!el\)return;  
-  const rows=\(DB\.lancamentos||\[\]\);  
-  if\(rows\.length<2\)\{el\.innerHTML='<tr><td style="color:var\(\-\-txt2\)">Nenhum lançamento registrado pelo site\.</td></tr>';return;\}  
-  let h='<thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Tipo</th><th>Descrição</th><th>Parcela</th><th>Ação</th></tr></thead><tbody>';  
-  rows\.slice\(1\)\.forEach\(r=>\{  
-    const num=parseNum\(cell\(r,2\)\);  
-    const ent=/entrada/i\.test\(cell\(r,3\)\);  
-    const id=cell\(r,7\)||cell\(r,0\);  
-    h\+='<tr><td>'\+esc\(cell\(r,0\)\)\+'</td><td>'\+esc\(cell\(r,1\)\)\+'</td><td>'\+\(num\!==null?fmtBRL\(num\):esc\(cell\(r,2\)\)\)\+'</td>'  
-      \+'<td><span class="tag '\+\(ent?'t\-green':'t\-red'\)\+'">'\+esc\(cell\(r,3\)\)\+'</span></td>'  
-      \+'<td>'\+esc\(cell\(r,4\)\)\+'</td><td>'\+esc\(cell\(r,5\)\)\+'</td>'  
-      \+'<td><button class="btn" style="padding:5px 10px;font\-size:11px" onclick="cancelarLancamento\(\\''\+esc\(id\)\+'\\'\)">🗑 Cancelar</button></td></tr>';  
-  \}\);  
-  el\.innerHTML=h\+'</tbody>';  
-\}  
+    <button onclick="go('home')">← Início</button>/Investimentos
+
+
+    
+
+
+    <h3 class="sec-title">Movimentar Investimentos</h3>
+    
+      
+        
+          <label>Conta</label>
+          <select id="invConta">
+            <option value="inter">Inter (Reserva de Emergência)</option>
+            <option value="nubank">Nubank (Férias Argentina)</option>
+          </select>
+        
+
+
+        
+          <label>Tipo</label>
+          <select id="invTipo">
+            <option value="adicionar">➕ Adicionar (aporte)</option>
+            <option value="retirar">➖ Retirar (resgate)</option>
+          </select>
+        
+
+
+      
+
+
+      
+        <label>Valor (R$)</label>
+        <input type="number" id="invValor" step="0.01" min="0" placeholder="0,00">
+      
+
+
+      <button class="btn" id="btnInv" onclick="movimentarInvestimento()">Confirmar movimentação</button>
+      
+
+
+    
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- repasses futuros \-\-\-\-\-\-\-\-\-\- \*/  
-function ajustarDiaUtilStr\(iso\)\{  
-  const d=new Date\(iso\+'T12:00:00'\);  
-  if\(isNaN\(d\)\)return iso;  
-  if\(d\.getDay\(\)===6\)d\.setDate\(d\.getDate\(\)\-1\);  
-  else if\(d\.getDay\(\)===0\)d\.setDate\(d\.getDate\(\)\-2\);  
-  return d\.toISOString\(\)\.split\('T'\)\[0\];  
-\}  
-function parseDataBR\(s\)\{  
-  if\(\!s\)return null;  
-  s=String\(s\)\.trim\(\);  
-  let m=s\.match\(/^\(\\d\{1,2\}\)\\/\(\\d\{1,2\}\)\\/\(\\d\{4\}\)$/\);  
-  if\(m\)return new Date\(\+m\[3\],\+m\[2\]\-1,\+m\[1\]\);  
-  m=s\.match\(/^\(\\d\{4\}\)\-\(\\d\{2\}\)\-\(\\d\{2\}\)$/\);  
-  if\(m\)return new Date\(\+m\[1\],\+m\[2\]\-1,\+m\[3\]\);  
-  const d=new Date\(s\);  
-  return isNaN\(d\)?null:d;  
-\}  
-function renderRepasses\(\)\{  
-  const rows=\(DB\.repassesFuturos||\[\]\)\.slice\(1\);  
-  const now=new Date\(\);const mes=now\.getMonth\(\);const ano=now\.getFullYear\(\);  
-  let receitas=0,saidas=0,pendentes=0;  
-  const rec=\[\],pont=\[\];  
-  rows\.forEach\(r=>\{  
-    const id=cell\(r,0\);  
-    if\(\!id\)return;  
-    const desc=cell\(r,1\),valor=parseNumSafe\(cell\(r,2\),'repasse '\+desc\),data=cell\(r,3\);  
-    const tipo=cell\(r,4\),recorrente=/sim/i\.test\(cell\(r,5\)\),status=cell\(r,6\),conta=cell\(r,7\);  
-    const concl=/conclu/i\.test\(status\);  
-    const d=parseDataBR\(data\);  
-    const noMes=d&&d\.getMonth\(\)===mes&&d\.getFullYear\(\)===ano;  
-    if\(\!concl&&noMes\)\{  
-      if\(/receita/i\.test\(tipo\)\)receitas\+=valor;else saidas\+=valor;  
-      pendentes\+\+;  
-    \}  
-    const item=\{id:id,desc:desc,valor:valor,data:data,tipo:tipo,recorrente:recorrente,concl:concl,conta:conta,noMes:noMes\};  
-    \(recorrente?rec:pont\)\.push\(item\);  
-  \}\);  
-  let saldo=0;  
-  \(DB\.contas||\[\]\)\.slice\(1\)\.forEach\(r=>\{  
-    if\(\!/^total/i\.test\(cell\(r,0\)\)\)saldo\+=parseNumSafe\(cell\(r,2\),'saldo '\+cell\(r,0\)\);  
-  \}\);  
-  const projetado=saldo\+receitas\-saidas;  
-  const kpis=document\.getElementById\('repKpis'\);  
-  if\(kpis\)kpis\.innerHTML=  
-    '<div class="glass kpi"><div class="lbl" style="color:var\(\-\-green\)">Receitas Previstas</div><div class="val" style="color:var\(\-\-green\)">'\+fmtBRL\(receitas\)\+'</div><div class="sub">'\+pendentes\+' itens pendentes no mês</div></div>'  
-   \+'<div class="glass kpi"><div class="lbl" style="color:var\(\-\-red\)">Saídas Previstas</div><div class="val" style="color:var\(\-\-red\)">'\+fmtBRL\(saidas\)\+'</div><div class="sub">não concluídas do mês</div></div>'  
-   \+'<div class="glass kpi"><div class="lbl" style="color:var\(\-\-blue\)">Saldo Projetado</div><div class="val" style="color:var\(\-\-blue\)">'\+fmtBRL\(projetado\)\+'</div><div class="sub">saldo atual \+ receitas − saídas</div></div>'  
-   \+'<div class="glass kpi"><div class="lbl">Itens no Mês</div><div class="val">'\+\(rec\.length\+pont\.length\)\+'</div><div class="sub">'\+pendentes\+' pendentes</div></div>';  
-  const rt=document\.getElementById\('repRecTable'\);  
-  if\(rt\)rt\.innerHTML=montarTabelaRep\(rec\);  
-  const pt=document\.getElementById\('repPontTable'\);  
-  if\(pt\)pt\.innerHTML=montarTabelaRep\(pont\);  
-\}  
-function montarTabelaRep\(lista\)\{  
-  if\(\!lista\.length\)return '<thead><tr><th>—</th></tr></thead><tbody><tr><td style="color:var\(\-\-txt2\)">Nenhum item nesta seção\.</td></tr></tbody>';  
-  let h='<thead><tr><th>Descrição</th><th>Valor</th><th>Data</th><th>Tipo</th><th>Recorrente</th><th>Status</th><th>Conta</th><th>Ações</th></tr></thead><tbody>';  
-  lista\.forEach\(it=>\{  
-    const isRec=/receita/i\.test\(it\.tipo\);  
-    h\+='<tr><td>'\+esc\(it\.desc\)\+'</td><td>'\+fmtBRL\(it\.valor\)\+'</td><td>'\+esc\(it\.data\)\+'</td>'  
-      \+'<td><span class="tag '\+\(isRec?'t\-green':'t\-red'\)\+'">'\+esc\(it\.tipo\)\+'</span></td>'  
-      \+'<td><span class="tag '\+\(it\.recorrente?'t\-blue':'t\-grey'\)\+'">'\+\(it\.recorrente?'Sim':'Não'\)\+'</span></td>'  
-      \+'<td><span class="tag '\+\(it\.concl?'t\-grey':'t\-orange'\)\+'">'\+\(it\.concl?'Concluído':'Pendente'\)\+'</span></td>'  
-      \+'<td>'\+esc\(it\.conta\)\+'</td>'  
-      \+'<td style="display:flex;gap:6px">'  
-      \+\(it\.concl?'':'<button class="btn" style="padding:5px 10px;font\-size:11px" onclick="concluirRepasse\(\\''\+esc\(it\.id\)\+'\\'\)">✓ Concluído</button>'\)  
-      \+'<button class="btn" style="padding:5px 10px;font\-size:11px" onclick="editarRepasse\(\\''\+esc\(it\.id\)\+'\\'\)">✎ Editar</button>'  
-      \+'<button class="btn" style="padding:5px 10px;font\-size:11px" onclick="excluirRepasse\(\\''\+esc\(it\.id\)\+'\\'\)">🗑 Excluir</button>'  
-      \+'</td></tr>';  
-  \}\);  
-  return h\+'</tbody>';  
-\}  
-function postScript\(payload,statusEl,okMsg\)\{  
-  fetch\(URL\_SCRIPT,\{method:'POST',mode:'no\-cors',headers:\{'Content\-Type':'text/plain;charset=utf\-8'\},body:JSON\.stringify\(payload\)\}\)  
-    \.then\(\(\)=>\{if\(statusEl\)\{statusEl\.textContent=okMsg;statusEl\.className='ok';\}\}\)  
-    \.catch\(e=>\{if\(statusEl\)\{statusEl\.textContent='Erro de conexão: '\+e\.message;statusEl\.className='err';\}\}\);  
-\}  
-function addRepasse\(\)\{  
-  const s=document\.getElementById\('repStatus'\);if\(\!s\)return;  
-  const desc=document\.getElementById\('repDesc'\)\.value\.trim\(\);  
-  const valor=parseFloat\(document\.getElementById\('repValor'\)\.value\);  
-  let data=document\.getElementById\('repData'\)\.value;  
-  const tipo=document\.getElementById\('repTipo'\)\.value;  
-  const rec=document\.getElementById\('repRec'\)\.value;  
-  const conta=document\.getElementById\('repConta'\)\.value;  
-  if\(\!desc||\!\(valor>0\)||\!data\)\{s\.textContent='Preencha descrição, valor e data\.';s\.className='err';return;\}  
-  const ajustada=ajustarDiaUtilStr\(data\);  
-  if\(ajustada\!==data\)\{  
-    if\(\!confirm\('A data cai em fim de semana\. Ajustar para o dia útil '\+ajustada\.split\('\-'\)\.reverse\(\)\.join\('/'\)\+'?'\)\)return;  
-    data=ajustada;  
-  \}  
-  s\.textContent='Enviando…';s\.className='';  
-  postScript\(\{action:'addRepasse',descricao:desc,valor:valor,data:data,tipo:tipo,recorrente:rec,conta:conta\},s,'Repasse adicionado\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function editarRepasse\(id\)\{  
-  const rows=\(DB\.repassesFuturos||\[\]\);  
-  const r=rows\.find\(x=>cell\(x,0\)===id\);  
-  if\(\!r\)\{alert\('Item não encontrado\.'\);return;\}  
-  const desc=prompt\('Descrição:',cell\(r,1\)\);if\(desc===null\)return;  
-  const valor=prompt\('Valor:',cell\(r,2\)\);if\(valor===null\)return;  
-  const data=prompt\('Data \(AAAA\-MM\-DD\):',cell\(r,3\)\);if\(data===null\)return;  
-  const tipo=prompt\('Tipo \(Receita/Saída\):',cell\(r,4\)\);if\(tipo===null\)return;  
-  const rec=prompt\('Recorrente \(Sim/Não\):',cell\(r,5\)\);if\(rec===null\)return;  
-  const conta=prompt\('Conta:',cell\(r,7\)\);if\(conta===null\)return;  
-  postScript\(\{action:'editarRepasse',id:id,descricao:desc,valor:valor,data:data,tipo:tipo,recorrente:rec,conta:conta\},document\.getElementById\('repStatus'\),'Repasse atualizado\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function excluirRepasse\(id\)\{  
-  if\(\!confirm\('Excluir este repasse?'\)\)return;  
-  postScript\(\{action:'excluirRepasse',id:id\},document\.getElementById\('repStatus'\),'Repasse excluído\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function concluirRepasse\(id\)\{  
-  const conta=prompt\('Conta para debitar o repasse \(Bradesco, Inter, Mercado Pago, Nubank, Midway\):'\);  
-  if\(\!conta\)return;  
-  postScript\(\{action:'concluirRepasse',id:id,conta:conta\},document\.getElementById\('repStatus'\),'Repasse concluído\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
+
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- ações \-\-\-\-\-\-\-\-\-\- \*/  
-function toggleParcelamento\(\)\{  
-  const f=document\.getElementById\('parcelaFields'\),sel=document\.getElementById\('parcelado'\);  
-  if\(f&&sel\)f\.style\.display=sel\.value==='sim'?'grid':'none';  
-\}  
-function toggleConta\(\)\{  
-  const f=document\.getElementById\('contaField'\),sel=document\.getElementById\('categoria'\);  
-  if\(f&&sel\)f\.style\.display=sel\.value==='PIX'?'block':'none';  
-\}  
-function transferirContas\(\)\{  
-  const s=document\.getElementById\('transStatus'\);if\(\!s\)return;  
-  const o=document\.getElementById\('transOrigem'\)\.value,d=document\.getElementById\('transDestino'\)\.value;  
-  const v=parseFloat\(document\.getElementById\('transValor'\)\.value\),dt=document\.getElementById\('transData'\)\.value;  
-  if\(o===d\)\{s\.textContent='Origem e destino não podem ser iguais\.';s\.className='err';return;\}  
-  if\(\!\(v>0\)\)\{s\.textContent='Informe um valor maior que zero\.';s\.className='err';return;\}  
-  if\(\!confirm\('Transferir '\+fmtBRL\(v\)\+' de '\+o\+' para '\+d\+'?'\)\)return;  
-  s\.textContent='Enviando…';s\.className='';  
-  postScript\(\{action:'transferir',origem:o,destino:d,valor:v,data:dt\},s,'Transferência registrada\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function cancelarLancamento\(id\)\{  
-  if\(\!confirm\('Cancelar este lançamento? Os efeitos serão revertidos\.'\)\)return;  
-  postScript\(\{action:'delete',id:id\},document\.getElementById\('cancelStatus'\),'Lançamento cancelado\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function pagarCartao\(key,nome\)\{  
-  if\(\!confirm\('Registrar pagamento da fatura do '\+nome\+'?'\)\)return;  
-  postScript\(\{action:'pagar',cartao:key\},document\.getElementById\('antStatus'\),'Pagamento registrado\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function desfazerPagamento\(key,nome\)\{  
-  if\(\!confirm\('Desfazer o pagamento do '\+nome\+'?'\)\)return;  
-  postScript\(\{action:'desfazer',cartao:key\},document\.getElementById\('antStatus'\),'Pagamento desfeito\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function confirmarRepasse\(tipo\)\{  
-  const valor=REPASSES\[tipo\];  
-  if\(\!confirm\('Confirmar repasse de '\+fmtBRL\(valor\)\+'?'\)\)return;  
-  postScript\(\{action:'repasse',tipo:tipo,valor:valor\},document\.getElementById\('antStatus'\),'Repasse confirmado\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function movimentarInvestimento\(\)\{  
-  const s=document\.getElementById\('invStatus'\);if\(\!s\)return;  
-  const conta=document\.getElementById\('invConta'\)\.value;  
-  const tipo=document\.getElementById\('invTipo'\)\.value;  
-  const v=parseFloat\(document\.getElementById\('invValor'\)\.value\);  
-  if\(\!\(v>0\)\)\{s\.textContent='Informe um valor maior que zero\.';s\.className='err';return;\}  
-  s\.textContent='Enviando…';s\.className='';  
-  postScript\(\{action:'investimento',conta:conta,tipo:tipo,valor:v\},s,'Movimentação registrada\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
-function calcularRestanteParcelas\(key\)\{  
-  const rows=\(DB\[CRON\_KEY\_MAP\[key\]\]||\[\]\)\.slice\(1\);  
-  let total=0;  
-  rows\.forEach\(r=>\{  
-    const base=parseNum\(cell\(r,1\)\);  
-    for\(let i=1;i<r\.length;i\+\+\)\{  
-      const s=cell\(r,i\);  
-      const m=s\.match\(/^\(\\d\+\)\\/\(\\d\+\)$/\);  
-      if\(m\)\{ if\(base>0\)total\+=base; break; \}  
-      const n=parseNum\(s\);  
-      if\(n\!==null\) total\+=n;  
-    \}  
-  \}\);  
-  return total;  
-\}  
-function atualizarPrevisaoAntecipacao\(\)\{  
-  const sel=document\.getElementById\('antCartao'\),el=document\.getElementById\('antTotal'\);  
-  if\(\!sel||\!el\)return;  
-  const t=calcularRestanteParcelas\(sel\.value\);  
-  el\.textContent=t>0?fmtBRL\(t\):'R$ 0,00';  
-\}  
-function anteciparParcelas\(\)\{  
-  const s=document\.getElementById\('antStatus'\);if\(\!s\)return;  
-  const sel=document\.getElementById\('antCartao'\);  
-  const t=calcularRestanteParcelas\(sel\.value\);  
-  if\(\!\(t>0\)\)\{s\.textContent='Nenhuma parcela futura para antecipar\.';s\.className='err';return;\}  
-  if\(\!confirm\('Antecipar e quitar '\+fmtBRL\(t\)\+' em parcelas deste cartão?'\)\)return;  
-  s\.textContent='Enviando…';s\.className='';  
-  postScript\(\{action:'antecipar',cartao:sel\.value\},s,'Antecipação registrada\! Recarregando…'\);  
-  setTimeout\(\(\)=>location\.reload\(\),3000\);  
-\}  
+    <button onclick="go('home')">← Início</button>/Extrato
+
+
+    
+
+
   
-/\* \-\-\-\-\-\-\-\-\-\- inicialização \-\-\-\-\-\-\-\-\-\- \*/  
-function initApp\(\)\{  
-  console\.log\('\[initApp\] iniciando dashboard'\);  
-  const hoje=new Date\(\)\.toISOString\(\)\.split\('T'\)\[0\];  
-  const dEl=document\.getElementById\('data'\);if\(dEl\)dEl\.value=hoje;  
-  const tEl=document\.getElementById\('transData'\);if\(tEl\)tEl\.value=hoje;  
-  const form=document\.getElementById\('formLancamento'\);  
-  if\(form\)\{  
-    form\.addEventListener\('submit',function\(e\)\{  
-      e\.preventDefault\(\);  
-      const st=document\.getElementById\('status'\);  
-      const categoria=document\.getElementById\('categoria'\)\.value;  
-      let catFinal=categoria;  
-      if\(categoria==='PIX'\)catFinal='conta:'\+document\.getElementById\('conta'\)\.value;  
-      const payload=\{action:'lancamento',data:document\.getElementById\('data'\)\.value,categoria:catFinal,valor:parseFloat\(document\.getElementById\('valor'\)\.value\),tipo:document\.getElementById\('tipo'\)\.value,parcelado:document\.getElementById\('parcelado'\)\.value,parcelas:document\.getElementById\('parcelas'\)\.value,parcelaAtual:document\.getElementById\('parcelaAtual'\)\.value,descricao:document\.getElementById\('descricao'\)\.value\};  
-      if\(st\)\{st\.textContent='Salvando lançamento…';st\.className='';\}  
-      fetch\(URL\_SCRIPT,\{method:'POST',mode:'no\-cors',headers:\{'Content\-Type':'text/plain;charset=utf\-8'\},body:JSON\.stringify\(payload\)\}\)  
-        \.then\(\(\)=>\{if\(st\)\{st\.textContent='Lançamento salvo\! Recarregando…';st\.className='ok';\}\}\)  
-        \.catch\(err=>\{if\(st\)\{st\.textContent='Erro de conexão: '\+err\.message;st\.className='err';\}\}\);  
-      form\.reset\(\);  
-      const d=document\.getElementById\('data'\);if\(d\)d\.value=hoje;  
-      setTimeout\(\(\)=>location\.reload\(\),3000\);  
-    \}\);  
-  \}  
-  loadAll\(\);  
-\}  
-if\(document\.readyState==='loading'\)\{document\.addEventListener\('DOMContentLoaded',initApp\);\}  
-else\{initApp\(\);\}  
-renderNav\(\);  
-</script>  
-</body>  
+
+
+
+  
+    <button onclick="go('home')">← Início</button>/Repasses Futuros
+
+
+    
+
+
+    <h3 class="sec-title">Recorrentes</h3>
+    
+
+
+    <h3 class="sec-title">Pontuais</h3>
+    
+
+
+    <h3 class="sec-title">Novo Repasse Futuro</h3>
+    
+      <label>Descrição</label><input type="text" id="repDesc" placeholder="Ex.: Salário — Quinzena">
+
+
+      
+        <label>Valor (R$)</label><input type="number" id="repValor" step="0.01" min="0" placeholder="0,00">
+
+
+        <label>Data Prevista</label><input type="date" id="repData">
+
+
+      
+
+
+      
+        <label>Tipo</label><select id="repTipo"><option value="Receita">Receita</option><option value="Saída">Saída</option></select>
+
+
+        <label>Recorrente</label><select id="repRec"><option value="Sim">Sim</option><option value="Não">Não</option></select>
+
+
+      
+
+
+      <label>Conta</label><select id="repConta">
+        <option value="Bradesco">Bradesco</option><option value="Inter">Inter</option>
+        <option value="Mercado Pago">Mercado Pago</option><option value="Nubank">Nubank</option>
+        <option value="Midway">Midway</option>
+      </select>
+
+
+      <button class="btn" onclick="addRepasse()">Adicionar repasse</button>
+      
+
+
+    
+
+
+  
+
+
+
+
+
+
+<script>
+const SHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTn3WVpXjtEOzekF4UXmzQKij_bnjcq3QEKB9Cs5tC3tDa2kE7lsZlg9-dPF25f6Tm6tKi3CmYoLp9S/pub';
+const GIDS = {
+  resumo:0, limites:541806221, faturas:2070944204, extrato:1171372127,
+  cronograma:1731209628, investimentos:1278202952, mensal:1583243318,
+  bradesco:1531971815, inter:1033034888, mp:1004144872, nubank:1136662366,
+  riachuelo:1071605803, contas:600244146,
+  lancamentos:898101089,
+  cronBradesco:858683647, cronInter:279879354, cronMP:1960408749, cronRepasses:546669957,
+  cronRiachuelo:1658638578,
+  repassesFuturos:449747573
+};
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxeebWVZZHr1WJvlutFXoK--r-RlGQB-GX0fA1XSS95CESPk_gMRbaCOruZbVtFeozz4A/exec';
+const CARD_KEY = {
+  'Bradesco Visa':'bradesco', 'Inter Mastercard':'inter',
+  'Mercado Pago Visa':'mercado pago', 'Nubank Mastercard':'nubank',
+  'Riachuelo':'riachuelo'
+};
+const CRON_KEY_MAP = {
+  'bradesco':'cronBradesco', 'inter':'cronInter', 'mercado pago':'cronMP', 'riachuelo':'cronRiachuelo'
+};
+const CRON_SECTIONS = [
+  {label:'Bradesco', key:'cronBradesco', color:'#38bdf8'},
+  {label:'Inter', key:'cronInter', color:'#f87171'},
+  {label:'Mercado Pago', key:'cronMP', color:'#fb923c'},
+  {label:'Riachuelo', key:'cronRiachuelo', color:'#f472b6'},
+  {label:'Repasses PIX + Investimentos', key:'cronRepasses', color:'#2dd4bf'}
+];
+const REPASSES = { beli:274.80, reserva:100 };
+const SHORT_LABEL = {
+  'Saldo em Contas':'Saldo', 'Liquidez Real Projetada':'Liquidez',
+  'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas':'Faturas'
+};
+let DB = {}, chart = null;
+
+function parseCSV(text){
+  const rows=[];let row=[],field='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c!=='\r') field+=c;
+    }
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+function cell(r,i){return (r[i]!==undefined&&r[i]!==null)?String(r[i]).trim():'';}
+function parseNum(v){
+  if(v===undefined||v===null) return null;
+  let s=String(v)
+    .replace(/[\u00A0\u200B\uFEFF]/g,'')
+    .replace(/"/g,'')
+    .trim()
+    .replace(/R\$\s?/gi,'')
+    .replace(/%/g,'');
+  if(s===''||s==='-'||s==='—') return null;
+  let n;
+  if(s.indexOf(',')>=0){
+    s=s.replace(/\./g,'').replace(',','.');
+    n=parseFloat(s);
+  } else {
+    n=parseFloat(s);
+  }
+  return isNaN(n)?null:n;
+}
+function parseNumSafe(v,label){
+  const n=parseNum(v);
+  if(n===null){
+    console.warn('[parseNumSafe] valor não reconhecido:',JSON.stringify(v),'| item:',label);
+    return 0;
+  }
+  return n;
+}
+function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>');}
+function setMeta(txt){
+  var el = document.getElementById('meta');
+  if(el) el.textContent = txt;
+}
+
+async function loadSheet(key){
+  const url = SHEET_BASE + '?gid=' + GIDS[key] + '&single=true&output=csv';
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(key + ' HTTP ' + res.status);
+  const txt = await res.text();
+  DB[key] = parseCSV(txt);
+  console.log('[loadSheet] OK', key, 'linhas:', DB[key].length);
+}
+async function loadAll(){
+  console.log('[loadAll] iniciando carregamento de', Object.keys(GIDS).length, 'abas');
+  setMeta('Atualizando…');
+  const keys = Object.keys(GIDS);
+  const results = await Promise.allSettled(keys.map(loadSheet));
+  const falhas = [];
+  results.forEach((r,i)=>{
+    if(r.status==='rejected'){
+      falhas.push(keys[i]);
+      DB[keys[i]] = DB[keys[i]] || [];
+      console.warn('[loadAll] FALHOU:', keys[i], r.reason && r.reason.message ? r.reason.message : r.reason);
+    }
+  });
+  try { renderAll(); } catch(e){ console.error('[renderAll] erro:', e); }
+  if(falhas.length){
+    setMeta('Parcial · falhou: ' + falhas.join(', '));
+    console.warn('[loadAll] concluído com falhas:', falhas.join(', '));
+  } else {
+    setMeta('Atualizado: ' + new Date().toLocaleString('pt-BR'));
+    console.log('[loadAll] concluído com sucesso');
+  }
+}
+
+function renderAll(){
+  renderChips(); renderOverview(); renderContas(); renderCredit(); renderFaturas();
+  renderCronograma(); renderInvest(); renderExtrato(); renderLancamentos();
+  renderRepasses();
+  atualizarPrevisaoAntecipacao();
+}
+function renderChips(){
+  const rows=(DB.resumo||[]).slice(1);
+  let html='';
+  rows.slice(0,4).forEach(r=>{
+    const lbl=SHORT_LABEL[cell(r,0)]||cell(r,0);
+    const val=cell(r,1), n=parseNum(val);
+    html+=`${esc(lbl)}
+
+
+      ${n!==null?fmtBRL(n):esc(val)}
+
+
+      ${esc(cell(r,2))}
+
+
+
+`;
+  });
+  const el=document.getElementById('chips');
+  if(el) el.innerHTML=html;
+}
+function renderOverview(){
+  const rows=(DB.resumo||[]).slice(1);
+  let grid='';
+  rows.slice(0,4).forEach(r=>{
+    const n=parseNum(cell(r,1));
+    grid+=`${esc(cell(r,0))}
+
+
+      ${n!==null?fmtBRL(n):esc(cell(r,1))}
+
+
+      ${esc(cell(r,2))}
+
+
+
+`;
+  });
+  const kg=document.getElementById('kpiGrid');
+  if(kg) kg.innerHTML=grid;
+  const liq=rows.find(r=>/Liquidez Real/i.test(cell(r,0)));
+  const comp=rows.find(r=>/Comprometimento/i.test(cell(r,0)));
+  const saldo=rows.find(r=>/Saldo em Contas/i.test(cell(r,0)));
+  const liqN=parseNum(liq?cell(liq,1):''), compN=parseNum(comp?cell(comp,1):''), saldoN=parseNum(saldo?cell(saldo,1):'');
+  const pct=compN!==null?Math.min(100,compN):0;
+  const barColor=pct>80?'linear-gradient(90deg,var(--orange),var(--red))':pct>50?'linear-gradient(90deg,var(--blue),var(--orange))':'linear-gradient(90deg,var(--green),var(--teal))';
+  const lc=document.getElementById('liqCard');
+  if(lc) lc.innerHTML=`
+    <h3 class="sec-title" style="margin-top:0">Análise de Liquidez e Comprometimento</h3>
+    
+      Margem Livre: **${saldoN!==null?fmtBRL(saldoN):'—'}**
+      Comprometimento: **${compN!==null?compN.toFixed(1).replace('.',',')+'%':'—'}**
+    
+
+
+    
+
+
+
+
+    Liquidez após faturas do mês: **${liqN!==null?fmtBRL(liqN):'—'}**
+
+`;
+  renderChart();
+}
+function renderContas(){
+  const rows=(DB.contas||[]).slice(1);
+  let t='<thead><tr><th>Conta</th><th>Tipo</th><th>Saldo</th><th>Detalhe</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const n=parseNum(cell(r,2));
+    const isTotal=/^total/i.test(cell(r,0));
+    t+=`<tr${isTotal?' class="hl"':''}><td>${esc(cell(r,0))}</td><td>${esc(cell(r,1))}</td>
+      <td>${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
+      <td>${esc(cell(r,3))}</td></tr>`;
+  });
+  const el=document.getElementById('contasTable');
+  if(el) el.innerHTML=t+'</tbody>';
+}
+function renderChart(){
+  const rows=(DB.mensal||[]).slice(1);
+  const labels=[],data=[];
+  rows.forEach(r=>{labels.push(cell(r,0));const n=parseNum(cell(r,1));data.push(n!==null?n:0);});
+  const ctx=document.getElementById('chartMensal');
+  if(!ctx) return;
+  if(chart) chart.destroy();
+  if(typeof Chart==='undefined'){ctx.parentElement.innerHTML='Gráfico indisponível (Chart.js não carregou).
+
+';return;}
+  if(!labels.length){ctx.parentElement.innerHTML='Sem dados de projeção mensal.
+
+';return;}
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Total Gasto',data,backgroundColor:['#38bdf8','#a78bfa','#4ade80','#4ade80','#fb923c','#fb923c','#f87171','#94a3b8'],borderRadius:8,barPercentage:.7}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#94a3b8'}}},
+      scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,.05)'}},
+        y:{ticks:{color:'#94a3b8',callback:v=>'R$ '+v},grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+}
+function renderCredit(){
+  const rows=(DB.limites||[]).slice(1);
+  const fats=(DB.faturas||[]).slice(1);
+  let html='';
+  rows.forEach(r=>{
+    const name=cell(r,0), key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
+    const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
+    const pctDisp=parseNum(cell(r,3)), status=cell(r,4);
+    const uso=pctDisp!==null?100-pctDisp:0;
+    const fatRow=fats.find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0].toLowerCase()));
+    const fat=parseNum(fatRow?cell(fatRow,1):''), venc=fatRow?cell(fatRow,2):'';
+    const color=uso>80?'var(--red)':uso>50?'var(--orange)':'var(--blue)';
+    const tag=status.toLowerCase()==='crítico'?'t-red':status.toLowerCase()==='alerta'?'t-orange':status.toLowerCase()==='normal'?'t-blue':'t-grey';
+    const c1=name.startsWith('Bradesco')?'#38bdf8':name.startsWith('Inter')?'#f87171':name.startsWith('Mercado')?'#fb923c':name.startsWith('Riachuelo')?'#f472b6':'#64748b';
+    html+=`
+      ${esc(name)}${esc(status)}
+
+
+      ${fat!==null?fmtBRL(fat):'—'}
+
+
+      Fatura do mês · Venc ${esc(venc||'—')}
+
+
+      
+
+
+
+
+      Uso: ${uso.toFixed(1).replace('.',',')}%
+      Disp: ${disp!==null?fmtBRL(disp):'—'} / ${total!==null?fmtBRL(total):'—'}
+
+
+      
+        <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado</button>
+        <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer</button>
+      
+
+
+    
+
+`;
+  });
+  const cg=document.getElementById('ccGrid');
+  if(cg) cg.innerHTML=html;
+  let t='<thead><tr><th>Cartão</th><th>Limite Total</th><th>Disponível</th><th>% Disponível</th><th>Status</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const total=parseNum(cell(r,1)), disp=parseNum(cell(r,2));
+    t+=`<tr><td>${esc(cell(r,0))}</td><td>${total!==null?fmtBRL(total):'—'}</td>
+      <td>${disp!==null?fmtBRL(disp):'—'}</td>
+      <td>${esc(cell(r,3))}</td>
+      <td>${esc(cell(r,4))}</td></tr>`;
+  });
+  const lt=document.getElementById('limTable');
+  if(lt) lt.innerHTML=t+'</tbody>';
+}
+function renderFaturas(){
+  const cards=[['Bradesco Visa','bradesco','#38bdf8'],['Mercado Pago Visa','mp','#fb923c'],['Inter Mastercard','inter','#f87171'],['Nubank Mastercard','nubank','#64748b'],['Riachuelo','riachuelo','#f472b6']];
+  let out='';
+  cards.forEach(([name,keySheet,color])=>{
+    const rows=(DB[keySheet]||[]).slice(1).filter(r=>!/total/i.test(cell(r,0)));
+    const fatRow=(DB.faturas||[]).slice(1).find(f=>cell(f,0).toLowerCase().startsWith(name.toLowerCase().split(' ')[0]));
+    const venc=fatRow?cell(fatRow,2):'';
+    const key=CARD_KEY[name]||name.split(' ')[0].toLowerCase();
+    let sum=0;
+    rows.forEach(r=>{
+      sum+=parseNumSafe(cell(r,1),cell(r,0));
+    });
+    let t=`
+      | ${esc(name)} — Fatura ${esc(venc\|\|'')} | Valor | Parcela | Observações |
+| --- | --- | --- | --- |
+| ${esc(cell(r,0))} | ${fmtBRL(parseNum(cell(r,1))\|\|0)} | ${esc(cell(r,2))} | ${esc(cell(r,3))} |
+| TOTAL | ${fmtBRL(sum)} |  |  |
+
+`;
+    t+=`
+      <button class="btn" style="padding:6px 12px;font-size:12px" onclick="pagarCartao('${esc(key)}','${esc(name)}')">✓ Pagamento efetuado — ${esc(name)}</button>
+      <button class="btn" style="padding:6px 12px;font-size:12px;color:var(--orange);border-color:rgba(251,146,60,.4)" onclick="desfazerPagamento('${esc(key)}','${esc(name)}')">↩ Desfazer pagamento</button>
+    
+
+`;
+    out+=t;
+  });
+  const el=document.getElementById('faturasContent');
+  if(el) el.innerHTML=out;
+}
+function renderCronograma(){
+  let out='';
+  CRON_SECTIONS.forEach(sec=>{
+    const rows=DB[sec.key]||[];
+    if(!rows.length) return;
+    const head=rows[0];
+    let t=`
+      <h3 class="sec-title" style="margin:0 0 10px;color:${sec.color}">${esc(sec.label)}</h3>
+      | ${esc(cell([h],0))} |
+| --- |
+| ${esc(c)} |
+
+';
+    out+=t;
+  });
+  const rows=DB.cronograma||[];
+  if(rows.length){
+    const head=rows[0];
+    let t=`
+      <h3 class="sec-title" style="margin:0 0 10px;color:var(--purple)">Resumo Consolidado</h3>
+      | ${esc(cell([h],0))} |
+| --- |
+| ${esc(c)} |
+
+';
+    out+=t;
+  }
+  const el=document.getElementById('cronContent');
+  if(el) el.innerHTML=out;
+}
+function renderInvest(){
+  const rows=(DB.investimentos||[]).slice(1);
+  let html='';
+  rows.forEach(r=>{
+    const n=parseNum(cell(r,1));
+    const total=/total/i.test(cell(r,0));
+    html+=`
+      ${esc(cell(r,0))}
+
+
+      ${n!==null?fmtBRL(n):esc(cell(r,1))}
+
+
+      ${esc(cell(r,2))}
+
+
+    
+
+`;
+  });
+  const el=document.getElementById('invGrid');
+  if(el) el.innerHTML=html;
+}
+function renderExtrato(){
+  const rows=(DB.extrato||[]).slice(1);
+  let t='<thead><tr><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const tipo=cell(r,1), n=parseNum(cell(r,2));
+    const isEnt=tipo.toLowerCase().includes('entrada');
+    t+=`<tr><td>${esc(cell(r,0))}</td>
+      <td>${esc(tipo)}</td>
+      <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
+      <td>${esc(cell(r,3))}</td></tr>`;
+  });
+  const el=document.getElementById('extTable');
+  if(el) el.innerHTML=t+'</tbody>';
+}
+function renderLancamentos(){
+  const rows=(DB.lancamentos||[]).slice(1);
+  const el=document.getElementById('lancTable');
+  if(!el) return;
+  if(!rows.length){
+    el.innerHTML='<tbody><tr><td style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum lançamento registrado pelo site.</td></tr></tbody>';
+    return;
+  }
+  let t='<thead><tr><th>Data</th><th>Categoria</th><th>Valor</th><th>Tipo</th><th>Descrição</th><th>Parcela</th><th>Ação</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const id=cell(r,5);
+    const n=parseNum(cell(r,2));
+    const isEnt=cell(r,3).toLowerCase().includes('entrada');
+    const parcela=cell(r,6)==='sim' ? (cell(r,8)+'/'+cell(r,7)) : 'À vista';
+    t+=`<tr><td>${esc(cell(r,0))}</td>
+      <td>${esc(cell(r,1))}</td>
+      <td style="color:${isEnt?'var(--green)':'var(--red)'}">${isEnt?'+':'−'} ${n!==null?fmtBRL(n):esc(cell(r,2))}</td>
+      <td>${esc(cell(r,3))}</td>
+      <td>${esc(cell(r,4))}</td>
+      <td>${esc(parcela)}</td>
+      <td><button class="btn" style="padding:5px 12px;font-size:12px;color:var(--red);border-color:rgba(248,113,113,.4)" onclick="cancelarLancamento('${esc(id)}')">Cancelar</button></td></tr>`;
+  });
+  el.innerHTML=t+'</tbody>';
+}
+
+function ajustarDiaUtilStr(iso){
+  if(!iso) return '';
+  var p = iso.split('-');
+  var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+  if(isNaN(d.getTime())) return iso;
+  var dow = d.getDay();
+  if(dow === 6) d.setDate(d.getDate()-1);
+  else if(dow === 0) d.setDate(d.getDate()-2);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function parseDataBR(s){
+  var t = String(s||'').trim();
+  var m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return new Date(parseInt(m[3],10), parseInt(m[2],10)-1, parseInt(m[1],10));
+  var m2 = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m2) return new Date(parseInt(m2[1],10), parseInt(m2[2],10)-1, parseInt(m2[3],10));
+  var d = new Date(t);
+  return isNaN(d.getTime()) ? null : d;
+}
+function renderRepasses(){
+  var rows = (DB.repassesFuturos||[]).slice(1);
+  var hoje = new Date();
+  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+  var receitas = 0, saidas = 0, pendentes = 0;
+  var rec = [], pont = [];
+  rows.forEach(function(r){
+    var id = cell(r,0);
+    if(!id) return;
+    var status = cell(r,6).toLowerCase();
+    var d = parseDataBR(cell(r,3));
+    var noMes = d && d.getMonth()===mesAtual && d.getFullYear()===anoAtual;
+    var pendente = status.indexOf('conclu') !== 0;
+    if(pendente && noMes){
+      var v = parseNumSafe(cell(r,2), cell(r,1));
+      if(cell(r,4).toLowerCase().indexOf('receita')===0) receitas += v;
+      else saidas += v;
+      pendentes++;
+    }
+    var item = {id:id, desc:cell(r,1), valor:cell(r,2), data:cell(r,3), tipo:cell(r,4), rec:cell(r,5), status:cell(r,6), conta:cell(r,7)};
+    if(cell(r,5).toLowerCase().indexOf('sim')===0) rec.push(item); else pont.push(item);
+  });
+  var saldo = 0;
+  (DB.contas||[]).slice(1).forEach(function(r){
+    if(/^total/i.test(cell(r,0))) return;
+    saldo += parseNumSafe(cell(r,2), cell(r,0));
+  });
+  var projetado = saldo + receitas - saidas;
+  var kp = document.getElementById('repKpis');
+  if(kp) kp.innerHTML =
+    'Receitas Previstas
+
+'+fmtBRL(receitas)+'
+
+Pendentes do mês corrente
+
+
+
+'+
+    'Saídas Previstas
+
+'+fmtBRL(saidas)+'
+
+Pendentes do mês corrente
+
+
+
+'+
+    'Saldo Projetado
+
+'+fmtBRL(projetado)+'
+
+Saldo + receitas − saídas
+
+
+
+'+
+    'Itens no Mês
+
+'+pendentes+'
+
+Pendentes de conclusão
+
+
+
+';
+  var rt = document.getElementById('repRecTable');
+  if(rt) rt.innerHTML = montarTabelaRep(rec);
+  var pt = document.getElementById('repPontTable');
+  if(pt) pt.innerHTML = montarTabelaRep(pont);
+}
+function montarTabelaRep(lista){
+  if(!lista.length) return '<tbody><tr><td style="padding:20px;color:var(--txt2);font-size:13px;text-align:center">Nenhum item nesta seção.</td></tr></tbody>';
+  var t = '<thead><tr><th>Descrição</th><th>Valor</th><th>Data</th><th>Tipo</th><th>Recorrente</th><th>Status</th><th>Conta</th><th>Ações</th></tr></thead><tbody>';
+  lista.forEach(function(it){
+    var isRec = it.tipo.toLowerCase().indexOf('receita')===0;
+    var concluido = it.status.toLowerCase().indexOf('conclu')===0;
+    var tagTipo = isRec ? 't-green' : 't-red';
+    var tagStatus = concluido ? 't-grey' : 't-orange';
+    var n = parseNum(it.valor);
+    t += '<tr>'+
+      '<td>'+esc(it.desc)+'</td>'+
+      '<td style="color:'+(isRec?'var(--green)':'var(--red)')+'">'+(n!==null?fmtBRL(n):esc(it.valor))+'</td>'+
+      '<td>'+esc(it.data)+'</td>'+
+      '<td>'+esc(it.tipo)+'</td>'+
+      '<td>'+esc(it.rec)+'</td>'+
+      '<td>'+esc(it.status)+'</td>'+
+      '<td>'+esc(it.conta)+'</td>'+
+      '<td style="white-space:nowrap">'+
+        (concluido ? '' : '<button class="btn" style="padding:5px 10px;font-size:11px;color:var(--green);border-color:rgba(74,222,128,.4)" onclick="concluirRepasse(\''+esc(it.id)+'\')">✓ Concluído</button> ')+
+        '<button class="btn" style="padding:5px 10px;font-size:11px" onclick="editarRepasse(\''+esc(it.id)+'\')">✎ Editar</button> '+
+        '<button class="btn" style="padding:5px 10px;font-size:11px;color:var(--red);border-color:rgba(248,113,113,.4)" onclick="excluirRepasse(\''+esc(it.id)+'\')">🗑 Excluir</button>'+
+      '</td></tr>';
+  });
+  return t+'</tbody>';
+}
+function addRepasse(){
+  var st = document.getElementById('repStatus');
+  var desc = document.getElementById('repDesc').value.trim();
+  var valor = document.getElementById('repValor').value;
+  var data = document.getElementById('repData').value;
+  if(!desc || !valor || !data){ if(st){st.className='err'; st.textContent='Preencha descrição, valor e data.';} return; }
+  var ajustada = ajustarDiaUtilStr(data);
+  if(ajustada !== data){
+    if(!confirm('A data '+data+' cai em fim de semana. Ajustar para '+ajustada+' (último dia útil anterior)?')) return;
+  }
+  if(st){st.className=''; st.textContent='Salvando…';}
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'addRepasse', descricao:desc, valor:parseFloat(valor.replace(',','.')),
+      data:ajustada, tipo:document.getElementById('repTipo').value,
+      recorrente:document.getElementById('repRec').value, conta:document.getElementById('repConta').value})
+  }).then(function(){
+    if(st){st.className='ok'; st.textContent='✅ Repasse adicionado! Atualizando…';}
+    document.getElementById('repDesc').value=''; document.getElementById('repValor').value='';
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao adicionar.';} });
+}
+function editarRepasse(id){
+  var rows = (DB.repassesFuturos||[]).slice(1);
+  var it = null;
+  rows.forEach(function(r){ if(cell(r,0)===id) it = {desc:cell(r,1),valor:cell(r,2),data:cell(r,3),tipo:cell(r,4),rec:cell(r,5),conta:cell(r,7)}; });
+  if(!it){ alert('Repasse não encontrado.'); return; }
+  var novaDesc = prompt('Descrição:', it.desc); if(novaDesc===null) return;
+  var novoValor = prompt('Valor (R$):', String(it.valor).replace('.',',')); if(novoValor===null) return;
+  var novaData = prompt('Data (dd/mm/aaaa):', it.data); if(novaData===null) return;
+  var novoTipo = prompt('Tipo (Receita ou Saída):', it.tipo); if(novoTipo===null) return;
+  var novaRec = prompt('Recorrente (Sim ou Não):', it.rec); if(novaRec===null) return;
+  var novaConta = prompt('Conta:', it.conta); if(novaConta===null) return;
+  var st = document.getElementById('repStatus');
+  if(st){st.className=''; st.textContent='Salvando…';}
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'editarRepasse', id:id, descricao:novaDesc,
+      valor:parseFloat(String(novoValor).replace(',','.')), data:novaData,
+      tipo:novoTipo, recorrente:novaRec, conta:novaConta})
+  }).then(function(){
+    if(st){st.className='ok'; st.textContent='✅ Repasse atualizado! Atualizando…';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao editar.';} });
+}
+function excluirRepasse(id){
+  if(!confirm('Excluir este repasse permanentemente? Se for recorrente, ele deixará de se repetir e não impactará mais a liquidez.')) return;
+  var st = document.getElementById('repStatus');
+  if(st){st.className=''; st.textContent='Excluindo…';}
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'excluirRepasse', id:id})
+  }).then(function(){
+    if(st){st.className='ok'; st.textContent='✅ Repasse excluído! Atualizando…';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3000);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao excluir.';} });
+}
+function concluirRepasse(id){
+  var conta = prompt('De qual conta o dinheiro entrou/saiu?\n(Bradesco, Inter, Mercado Pago, Nubank, Midway)','Bradesco');
+  if(!conta) return;
+  var st = document.getElementById('repStatus');
+  if(st){st.className=''; st.textContent='Concluindo…';}
+  fetch(URL_SCRIPT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'concluirRepasse', id:id, conta:conta})
+  }).then(function(){
+    if(st){st.className='ok'; st.textContent='✅ Repasse concluído e saldo atualizado!';}
+    setTimeout(function(){ loadAll(); if(st) st.textContent=''; },3500);
+  }).catch(function(){ if(st){st.className='err'; st.textContent='❌ Erro ao concluir.';} });
+}
+
+function toggleParcelamento(){
+  var sim = document.getElementById('parcelado').value === 'sim';
+  document.getElementById('parcelaFields').style.display = sim ? 'grid' : 'none';
+}
+function toggleConta(){
+  var pix = document.getElementById('categoria').value === 'PIX';
+  document.getElementById('contaField').style.display = pix ? 'block' : 'none';
+}
+
+function transferirContas(){
+  var origem = document.getElementById('transOrigem').value;
+  var destino = document.getElementById('transDestino').value;
+  var valor = document.getElementById('transValor').value;
+  var data = document.getElementById('transData').value || new Date().toISOString().split('T')[0];
+  var transStatus = document.getElementById('transStatus');
+  if(!valor || parseFloat(valor.replace(',', '.')) <= 0){
+    transStatus.className='err'; transStatus.textContent='Informe um valor válido.'; return;
+  }
+  if(origem === destino){
+    transStatus.className='err'; transStatus.textContent='Origem e destino devem ser diferentes.'; return;
+  }
+  var v = parseFloat(valor.replace(',', '.'));
+  if(!confirm('Transferir ' + fmtBRL(v) + ' de ' + origem + ' para ' + destino + '?')) return;
+  transStatus.className=''; transStatus.textContent='Transferindo…';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'transferir', origem:origem, destino:destino, valor:v, data:data })
+  }).then(function(){
+    transStatus.className='ok'; transStatus.textContent='✅ Transferência registrada! Atualizando…';
+    document.getElementById('transValor').value='';
+    setTimeout(function(){
+      loadAll();
+      transStatus.textContent='';
+    }, 3000);
+  }).catch(function(){
+    transStatus.className='err'; transStatus.textContent='❌ Erro ao transferir. Tente novamente.';
+  });
+}
+
+function cancelarLancamento(id){
+  if(!id){ alert('Lançamento sem identificador.'); return; }
+  if(!confirm('Cancelar este lançamento? Os efeitos serão revertidos.')) return;
+  var statusEl = document.getElementById('cancelStatus');
+  statusEl.className=''; statusEl.textContent='Cancelando…';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'delete', id:id })
+  }).then(function(){
+    statusEl.className='ok'; statusEl.textContent='✅ Lançamento cancelado! Atualizando…';
+    setTimeout(function(){
+      loadAll();
+      statusEl.textContent='';
+    }, 3000);
+  }).catch(function(){
+    statusEl.className='err'; statusEl.textContent='❌ Erro ao cancelar. Tente novamente.';
+  });
+}
+
+function pagarCartao(key, nome){
+  nome = nome || key;
+  if(!confirm('Confirmar pagamento da fatura ' + nome + '? A fatura será zerada, a próxima será montada com os gastos fixos e o limite será liberado.')) return;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'pagar', cartao:key })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); }, 3500);
+  }).catch(function(){
+    alert('Erro ao registrar pagamento. Tente novamente.');
+  });
+}
+function desfazerPagamento(key, nome){
+  nome = nome || key;
+  if(!confirm('Desfazer o último pagamento de ' + nome + '? Disponível por até 2 dias.')) return;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'desfazer', cartao:key })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); }, 3500);
+  }).catch(function(){
+    alert('Erro ao desfazer pagamento. Tente novamente.');
+  });
+}
+
+function confirmarRepasse(tipo){
+  var nomes = {beli:'PIX para Beli', reserva:'repasse de reserva'};
+  var valor = REPASSES[tipo];
+  if(!valor){ alert('Tipo de repasse não reconhecido.'); return; }
+  var label = 'R$ ' + valor.toFixed(2).replace('.', ',');
+  if(!confirm('Confirmar ' + (nomes[tipo]||tipo) + ' no valor de ' + label + '? O valor será registrado no extrato e deduzido do saldo.')) return;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'repasse', tipo:tipo, valor:valor })
+  }).then(function(){
+    setTimeout(function(){ loadAll(); }, 3500);
+  }).catch(function(){
+    alert('Erro ao confirmar repasse. Tente novamente.');
+  });
+}
+
+function movimentarInvestimento(){
+  var invStatus = document.getElementById('invStatus');
+  var btn = document.getElementById('btnInv');
+  var conta = document.getElementById('invConta').value;
+  var tipo = document.getElementById('invTipo').value;
+  var valor = document.getElementById('invValor').value;
+  if(!valor || parseFloat(valor.replace(',', '.')) <= 0){
+    invStatus.className='err'; invStatus.textContent='Informe um valor válido.'; return;
+  }
+  invStatus.className=''; invStatus.textContent='Processando…';
+  btn.disabled = true;
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'investimento', conta:conta, tipo:tipo, valor: parseFloat(valor.replace(',', '.')) })
+  }).then(function(){
+    invStatus.className='ok'; invStatus.textContent='✅ Movimentação registrada! Atualizando…';
+    document.getElementById('invValor').value='';
+    setTimeout(function(){
+      loadAll();
+      btn.disabled = false; invStatus.textContent='';
+    }, 3000);
+  }).catch(function(){
+    invStatus.className='err'; invStatus.textContent='❌ Erro ao movimentar. Tente novamente.';
+    btn.disabled = false;
+  });
+}
+
+function calcularRestanteParcelas(key){
+  const rows = DB[CRON_KEY_MAP[key]] || [];
+  if(!rows.length) return 0;
+  const head = rows[0];
+  let total = 0;
+  rows.slice(1).forEach(r=>{
+    if(/^subtotal/i.test(cell(r,0))) return;
+    const vb = parseNum(cell(r,1)) || 0;
+    for(let c=2;c<head.length;c++){
+      const vs = cell(r,c);
+      if(vs===''||vs==='—') continue;
+      if(/^\d+\/\d+$/.test(vs)){
+        total += vb>0 ? vb : (parseNum(vs)||0);
+      } else {
+        const vn = parseNum(vs);
+        if(vn!==null && vn>0) total += vn;
+      }
+    }
+  });
+  return total;
+}
+function atualizarPrevisaoAntecipacao(){
+  const el = document.getElementById('antCartao');
+  if(!el) return;
+  const key = el.value;
+  const total = calcularRestanteParcelas(key);
+  const out = document.getElementById('antTotal');
+  if(out) out.textContent = total>0 ? fmtBRL(total) : 'R$ 0,00';
+}
+function anteciparParcelas(){
+  const key = document.getElementById('antCartao').value;
+  const total = calcularRestanteParcelas(key);
+  if(total<=0){ alert('Não há parcelas pendentes para antecipar neste cartão.'); return; }
+  if(!confirm('Antecipar e quitar todas as parcelas deste cartão no valor de ' + fmtBRL(total) + '? O valor será descontado do saldo da conta.')) return;
+  var antStatus = document.getElementById('antStatus');
+  antStatus.className=''; antStatus.textContent='Processando…';
+  fetch(URL_SCRIPT, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ action:'antecipar', cartao:key })
+  }).then(function(){
+    antStatus.className='ok'; antStatus.textContent='✅ Parcelas antecipadas! Atualizando…';
+    setTimeout(function(){
+      loadAll();
+      antStatus.textContent='';
+    }, 3500);
+  }).catch(function(){
+    antStatus.className='err'; antStatus.textContent='❌ Erro ao antecipar. Tente novamente.';
+  });
+}
+
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el=document.getElementById('view-'+view);
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function initApp(){
+  console.log('[initApp] iniciando dashboard');
+  var dEl = document.getElementById('data');
+  if(dEl) dEl.value = new Date().toISOString().split('T')[0];
+  var tEl = document.getElementById('transData');
+  if(tEl) tEl.value = new Date().toISOString().split('T')[0];
+
+  var form = document.getElementById('formLancamento');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var statusEl = document.getElementById('status');
+      var btn = document.getElementById('btnSalvar');
+      if(statusEl){statusEl.className=''; statusEl.textContent='Salvando…';}
+      if(btn){btn.disabled = true; btn.textContent = 'Enviando…';}
+      var categoria = document.getElementById('categoria').value;
+      if(categoria === 'PIX') categoria = 'conta:' + document.getElementById('conta').value;
+      var dados = {
+        data: document.getElementById('data').value,
+        categoria: categoria,
+        valor: parseFloat(document.getElementById('valor').value.replace(',', '.')),
+        tipo: document.getElementById('tipo').value,
+        descricao: document.getElementById('descricao').value,
+        parcelado: document.getElementById('parcelado').value,
+        parcelas: document.getElementById('parcelas').value,
+        parcelaAtual: document.getElementById('parcelaAtual').value
+      };
+      fetch(URL_SCRIPT, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(dados)
+      }).then(function(){
+        if(statusEl){statusEl.className='ok'; statusEl.textContent='✅ Lançamento salvo! Atualizando dados…';}
+        form.reset();
+        var pf = document.getElementById('parcelaFields');
+        if(pf) pf.style.display='none';
+        var cf = document.getElementById('contaField');
+        if(cf) cf.style.display='none';
+        var d2 = document.getElementById('data');
+        if(d2) d2.value = new Date().toISOString().split('T')[0];
+        setTimeout(function(){
+          loadAll();
+          if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+          if(statusEl) statusEl.textContent = '';
+        }, 3000);
+      }).catch(function(){
+        if(statusEl){statusEl.className='err'; statusEl.textContent='❌ Erro ao salvar. Tente novamente.';}
+        if(btn){btn.disabled = false; btn.textContent = 'Salvar lançamento';}
+      });
+    });
+  }
+
+  loadAll();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+</script>
+</body>
 </html>
