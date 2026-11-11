@@ -216,6 +216,15 @@ footer{text-align:center;color:var(--txt2);font-size:11px;margin-top:44px;paddin
 <div class="breadcrumb"><button onclick="go('home')">← Início</button><span>/</span><span>Visão Geral</span></div>
 <div class="kpi-grid" id="kpiGrid"></div>
 <div class="glass liq" id="liqCard"></div>
+<h3 class="sec-title">Compromissos do Mês<span class="line"></span></h3>
+<div class="kpi-grid" id="mesKpis"></div>
+<h3 class="sec-title">Categorização do Mês Atual<span class="line"></span></h3>
+<div class="glass chart-box"><div style="height:300px"><canvas id="chartMesCat"></canvas></div></div>
+<div class="glass" style="padding:22px;margin-top:16px"><div id="mesCatBars"></div></div>
+<h3 class="sec-title">Total por Cartão (Mês Atual)<span class="line"></span></h3>
+<div class="glass tbl-wrap"><table id="mesCartaoTable"></table></div>
+<h3 class="sec-title">Detalhamento por Categoria (Mês Atual)<span class="line"></span></h3>
+<div class="glass tbl-wrap"><table id="mesCatTable"></table></div>
 <h3 class="sec-title">Saldo por Conta<span class="line"></span></h3>
 <div class="glass tbl-wrap"><table id="contasTable"></table></div>
 <div class="glass chart-box"><h3 class="sec-title">Projeção de Gastos Fixos<span class="line"></span></h3><div style="height:300px"><canvas id="chartMensal"></canvas></div></div>
@@ -344,17 +353,23 @@ const REPASSES = { beli:274.80, reserva:100 };
 const SHORT_LABEL = { 'Saldo em Contas':'Saldo', 'Liquidez Real Projetada':'Liquidez', 'Limite Conjugado Disponível':'Limite Livre', 'Total Faturas':'Faturas' };
 const MESES_ABREV = ['jan','fev','mar','abr','maio','jun','jul','ago','set','out','nov','dez'];
 const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const CAT_CORES = { 'Alimentação':'#fb923c', 'Transporte':'#38bdf8', 'Saúde':'#4ade80', 'Lazer':'#a78bfa', 'Assinaturas':'#f472b6', 'Compras':'#fbbf24', 'Outros':'#94a3b8' };
-const CAT_ORDEM = ['Alimentação','Transporte','Saúde','Lazer','Assinaturas','Compras','Outros'];
+const CAT_CORES = { 'Alimentação':'#fb923c', 'Transporte':'#38bdf8', 'Saúde':'#4ade80', 'Cuidados Pessoais':'#2dd4bf', 'Lazer':'#a78bfa', 'Assinaturas':'#f472b6', 'Educação':'#818cf8', 'Vestuário':'#fbbf24', 'Eletrônicos':'#22d3ee', 'Casa':'#c084fc', 'Viagem':'#34d399', 'Transferências':'#94a3b8', 'Outros':'#64748b' };
+const CAT_ORDEM = ['Alimentação','Transporte','Saúde','Cuidados Pessoais','Lazer','Assinaturas','Educação','Vestuário','Eletrônicos','Casa','Viagem','Transferências','Outros'];
 const CAT_REGRAS = [
-  { cat:'Assinaturas', termos:['assinatura','mentoria','curso','duo gourmet','clube ifood','adapta one','vivo','cloud','youtube premium','titanium'] },
-  { cat:'Saúde', termos:['farmácia','farmacia','farma','cabelo','barbearia','dentista','médico','medico','exame','academia','crossfit'] },
+  { cat:'Assinaturas', termos:['assinatura','duo gourmet','clube ifood','vivo','cloud','youtube premium','titanium','crossfit'] },
+  { cat:'Educação', termos:['mentoria','curso','adapta one','livro'] },
+  { cat:'Saúde', termos:['farmácia','farmacia','farma','dentista','médico','medico','exame','academia'] },
+  { cat:'Cuidados Pessoais', termos:['cabelo','barbearia','barba','estética','estetica'] },
   { cat:'Transporte', termos:['99','uber','apps','taxi','combustível','combustivel','gasolina','estacionamento','passagem'] },
-  { cat:'Lazer', termos:['livro','pulse','ingresso','cinepolis','cinema','feeld','netflix','spotify','jogo','show','viagem','hotel'] },
-  { cat:'Compras', termos:['presente','smartwatch','mochila','roupas','loungerie','multicoisas','fone','relógio','relogio','calças','calcas','tênis','tenis','vestuário','vestuario'] },
-  { cat:'Alimentação', termos:['bacio','baccio','tudo conveni','pão com ovo','pao com ovo','almoço','almoco','ifood','café da manhã','cafe da manha','sushi','milkshake','coca','pão','pao','conveniencia','cacau','netão','netao','borelli','mc com','shawarma','espeto','divino grao','maioca','restaurante','padaria','lanche','empada','pizza','hamburguer','açai','acai'] }
+  { cat:'Lazer', termos:['pulse','ingresso','cinepolis','cinema','feeld','netflix','spotify','jogo','show'] },
+  { cat:'Viagem', termos:['belem','algodoal','hotel','pousada','viagem'] },
+  { cat:'Vestuário', termos:['roupas','loungerie','calças','calcas','tênis','tenis','camisa','vestuário','vestuario'] },
+  { cat:'Eletrônicos', termos:['smartwatch','fone','relógio','relogio','celular','notebook'] },
+  { cat:'Casa', termos:['multicoisas','mochila','móveis','moveis','decoração','decoracao'] },
+  { cat:'Alimentação', termos:['bacio','baccio','tudo conveni','pão com ovo','pao com ovo','almoço','almoco','ifood','café da manhã','cafe da manha','sushi','milkshake','coca','pão','pao','conveniencia','cacau','netão','netao','borelli','mc com','shawarma','espeto','divino grao','maioca','restaurante','padaria','lanche','empada','pizza','hamburguer','açai','acai','burger','cervejaria','gelato','alimentação','alimentacao','marcelinho','rua'] },
+  { cat:'Transferências', termos:['wellington','cesar augusto','valdelice','yago mateus'] }
 ];
-let DB = {}, chart = null, chartHistMensal = null, chartHistCat = null, histMesSel = null;
+let DB = {}, chart = null, chartHistMensal = null, chartHistCat = null, chartMesCat = null, histMesSel = null;
 
 function normalizarTexto(s){
   return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -385,6 +400,104 @@ function classificarGasto(desc){
     }
   }
   return 'Outros';
+}
+
+function lerMesAtual(){
+  var mapa = [['bradesco','Bradesco'],['inter','Inter'],['mp','Mercado Pago'],['nubank','Nubank'],['riachuelo','Riachuelo']];
+  var res = { total:0, categorias:{}, cartoes:{}, itens:[] };
+  mapa.forEach(function(par){
+    var key = par[0], nome = par[1];
+    (DB[key]||[]).slice(1).forEach(function(r){
+      var desc = cell(r,0);
+      if(!desc) return;
+      if(/total/i.test(desc)) return;
+      var val = parseNum(cell(r,1));
+      if(val === null || val <= 0) return;
+      var cat = classificarGasto(desc);
+      res.total += val;
+      res.categorias[cat] = (res.categorias[cat] || 0) + val;
+      res.cartoes[nome] = (res.cartoes[nome] || 0) + val;
+      res.itens.push({ desc:desc, valor:val, cat:cat, cartao:nome, parcela:cell(r,2) });
+    });
+  });
+  return res;
+}
+
+function renderMesAtual(){
+  var mes = lerMesAtual();
+  var f = calcularFinanceiro();
+  var compromissos = f.faturas + f.repasses;
+  var catsComValor = 0;
+  CAT_ORDEM.forEach(function(c){ if((mes.categorias[c]||0) > 0) catsComValor++; });
+  var kp = document.getElementById('mesKpis');
+  if(kp) kp.innerHTML =
+    '<div class="glass kpi"><div class="lbl">Compromissos</div><div class="val" style="color:var(--orange)">' + fmtBRL(compromissos) + '</div><div class="sub">Faturas ' + fmtBRL(f.faturas) + ' + Repasses ' + fmtBRL(f.repasses) + '</div></div>' +
+    '<div class="glass kpi"><div class="lbl">Faturas Abertas</div><div class="val">' + fmtBRL(f.faturas) + '</div><div class="sub">Soma dos 5 cartões</div></div>' +
+    '<div class="glass kpi"><div class="lbl">Repasses do Mês</div><div class="val" style="color:var(--teal)">' + fmtBRL(f.repasses) + '</div><div class="sub">Hotel, passagens, reserva e advogados</div></div>' +
+    '<div class="glass kpi"><div class="lbl">Categorias Mapeadas</div><div class="val" style="color:var(--purple)">' + catsComValor + '</div><div class="sub">De ' + CAT_ORDEM.length + ' categorias possíveis</div></div>';
+  var somaCats = 0, maiorValor = 0;
+  CAT_ORDEM.forEach(function(c){
+    var v = mes.categorias[c] || 0;
+    somaCats += v;
+    if(v > maiorValor) maiorValor = v;
+  });
+  var labels = [], valores = [], cores = [];
+  CAT_ORDEM.forEach(function(c){
+    var v = mes.categorias[c] || 0;
+    if(v > 0){ labels.push(c); valores.push(v); cores.push(CAT_CORES[c]); }
+  });
+  var ctx = document.getElementById('chartMesCat');
+  if(ctx){
+    if(chartMesCat) chartMesCat.destroy();
+    if(typeof Chart !== 'undefined' && labels.length){
+      chartMesCat = new Chart(ctx, {
+        type:'doughnut',
+        data:{ labels:labels, datasets:[{ data:valores, backgroundColor:cores, borderWidth:0 }] },
+        options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+          plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{ size:11 }, padding:12, boxWidth:12 } } } }
+      });
+    } else if(!labels.length){
+      ctx.parentElement.innerHTML = '<p style="color:var(--txt2);font-size:13px">Sem dados de categoria no mês atual.</p>';
+    }
+  }
+  var bars = document.getElementById('mesCatBars');
+  if(bars){
+    var bh = '';
+    CAT_ORDEM.forEach(function(c){
+      var v = mes.categorias[c] || 0;
+      if(v <= 0) return;
+      var pctTotal = somaCats > 0 ? (v / somaCats) * 100 : 0;
+      var larguraBarra = maiorValor > 0 ? (v / maiorValor) * 100 : 0;
+      bh += '<div class="cat-bar"><span class="cat-name">' + c + '</span><div class="cat-track"><div class="cat-fill" style="width:' + larguraBarra.toFixed(1) + '%;background:' + CAT_CORES[c] + '"></div></div><span class="cat-val">' + fmtBRL(v) + '</span><span class="cat-pct">' + pctTotal.toFixed(1).replace('.', ',') + '%</span></div>';
+    });
+    bars.innerHTML = bh || '<p style="color:var(--txt2);font-size:13px">Sem dados.</p>';
+  }
+  var ct = document.getElementById('mesCartaoTable');
+  if(ct){
+    var t = '<thead><tr><th>Cartão</th><th>Valor</th><th>% do Total</th></tr></thead><tbody>';
+    var somaCartoes = 0;
+    ['Bradesco','Inter','Mercado Pago','Nubank','Riachuelo'].forEach(function(nome){
+      var v = mes.cartoes[nome] || 0;
+      somaCartoes += v;
+      var pct = mes.total > 0 ? (v / mes.total) * 100 : 0;
+      t += '<tr><td>' + nome + '</td><td>' + (v > 0 ? fmtBRL(v) : '—') + '</td><td>' + (v > 0 ? pct.toFixed(1).replace('.', ',') + '%' : '—') + '</td></tr>';
+    });
+    t += '<tr class="hl"><td>TOTAL</td><td>' + fmtBRL(somaCartoes) + '</td><td>100,0%</td></tr>';
+    ct.innerHTML = t + '</tbody>';
+  }
+  var cat = document.getElementById('mesCatTable');
+  if(cat){
+    var t2 = '<thead><tr><th>Categoria</th><th>Valor</th><th>% do Total</th><th>Itens</th></tr></thead><tbody>';
+    CAT_ORDEM.forEach(function(c){
+      var v = mes.categorias[c] || 0;
+      if(v <= 0) return;
+      var pct = somaCats > 0 ? (v / somaCats) * 100 : 0;
+      var qtd = mes.itens.filter(function(it){ return it.cat === c; }).length;
+      t2 += '<tr><td><span class="tag" style="background:' + CAT_CORES[c] + '22;color:' + CAT_CORES[c] + '">' + c + '</span></td><td style="font-weight:700">' + fmtBRL(v) + '</td><td>' + pct.toFixed(1).replace('.', ',') + '%</td><td>' + qtd + '</td></tr>';
+    });
+    t2 += '<tr class="hl"><td>TOTAL</td><td>' + fmtBRL(somaCats) + '</td><td>100,0%</td><td>' + mes.itens.length + '</td></tr>';
+    cat.innerHTML = t2 + '</tbody>';
+  }
 }
 
 function lerHistorico(){
@@ -586,11 +699,12 @@ function renderAll(){
 }
 function renderChips(){
   var f = calcularFinanceiro();
+  var compromissos = f.faturas + f.repasses;
   var html = '';
   html += '<div class="glass chip"><div class="lbl">Saldo</div><div class="val">' + fmtBRL(f.saldo) + '</div><div class="sub">Somatório das contas</div></div>';
   html += '<div class="glass chip"><div class="lbl">Liquidez</div><div class="val">' + fmtBRL(f.liquidez) + '</div><div class="sub">Saldo + receitas − faturas − repasses</div></div>';
   html += '<div class="glass chip"><div class="lbl">Limite Livre</div><div class="val">' + fmtBRL(f.limiteDisponivel) + '</div><div class="sub">Soma dos limites livres</div></div>';
-  html += '<div class="glass chip"><div class="lbl">Faturas</div><div class="val">' + fmtBRL(f.faturas) + '</div><div class="sub">Faturas abertas</div></div>';
+  html += '<div class="glass chip"><div class="lbl">Compromissos</div><div class="val" style="color:var(--orange)">' + fmtBRL(compromissos) + '</div><div class="sub">Faturas ' + fmtBRL(f.faturas) + ' + Repasses ' + fmtBRL(f.repasses) + '</div></div>';
   var el = document.getElementById('chips');
   if(el) el.innerHTML = html;
 }
@@ -600,7 +714,8 @@ function renderOverview(){
   grid += '<div class="glass kpi"><div class="lbl">Saldo em Contas</div><div class="val">' + fmtBRL(f.saldo) + '</div><div class="sub">Somatório de todas as contas</div></div>';
   grid += '<div class="glass kpi"><div class="lbl">Liquidez Real Projetada</div><div class="val" style="color:var(--blue)">' + fmtBRL(f.liquidez) + '</div><div class="sub">Saldo + receitas − faturas − repasses a fazer</div></div>';
   grid += '<div class="glass kpi"><div class="lbl">Limite Conjugado Disponível</div><div class="val">' + fmtBRL(f.limiteDisponivel) + '</div><div class="sub">Soma dos limites livres</div></div>';
-  grid += '<div class="glass kpi"><div class="lbl">Total Faturas</div><div class="val" style="color:var(--orange)">' + fmtBRL(f.faturas) + '</div><div class="sub">Faturas abertas de todos os cartões</div></div>';
+  var compromissos = f.faturas + f.repasses;
+  grid += '<div class="glass kpi"><div class="lbl">Compromissos do Mês</div><div class="val" style="color:var(--orange)">' + fmtBRL(compromissos) + '</div><div class="sub">Faturas ' + fmtBRL(f.faturas) + ' + Repasses ' + fmtBRL(f.repasses) + '</div></div>';
   var kg = document.getElementById('kpiGrid');
   if(kg) kg.innerHTML = grid;
   var pct = Math.min(100, f.comprometimento);
@@ -613,6 +728,7 @@ function renderOverview(){
     '<div class="prog"><div class="prog-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
     '<div class="row" style="font-size:12px;color:var(--txt2);display:block;line-height:1.9">' +
     'Saldo <strong>' + fmtBRL(f.saldo) + '</strong> + Receitas <strong>' + fmtBRL(f.receitas) + '</strong> − Faturas <strong>' + fmtBRL(f.faturas) + '</strong> − Repasses <strong>' + fmtBRL(f.repasses) + '</strong> = <strong style="color:var(--blue)">' + fmtBRL(f.liquidez) + '</strong></div>';
+  renderMesAtual();
   renderChart();
 }
 function renderContas(){
